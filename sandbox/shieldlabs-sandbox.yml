@@ -1,0 +1,60 @@
+generated: '2026-08-19'
+method: searched
+source: https://docs.shieldlabs.ai/setup/environments
+docs:
+  environments: https://docs.shieldlabs.ai/setup/environments
+  webhooks: https://docs.shieldlabs.ai/setup/webhooks
+note: >-
+  ShieldLabs has no test-mode key prefix and no synthetic fixtures, and it says why: a Risk Score is a
+  measurement of the actual connection and browser environment of whoever loads the page, so there is
+  nothing meaningful to fake. The documented approach is environment SEPARATION rather than
+  simulation — a second registered domain with its own key set, its own balance, its own webhook
+  endpoints, and a separate snippet host. The provider states plainly that testing with real traffic
+  on a real development domain is the useful test, not synthetic requests.
+model: separate environment domains, not test-mode credentials
+test_vs_live:
+  mechanism: register a separate domain (e.g. dev.example.com) as its own ShieldLabs domain
+  key_separation: >-
+    each domain gets its own public key, private API key and secret key; a production public key is
+    rejected with 401 on a development domain because the key is bound to the domain it is served
+    from (resolved from Origin, Referer or Host)
+  key_prefix_difference: none — there is no sk_test_/sk_live_ style distinction
+  api_shape: identical in every environment; same fields, same request_id join key, same 0-100 score
+hosts:
+- purpose: production snippet
+  url: https://cdn.shieldlabs.ai/snippet.js
+- purpose: development snippet
+  url: https://dev.cdn.shieldlabs.ai/snippet.js
+  note: same module, same exports, same call pattern
+isolation:
+  analytics: development traffic never lands in the production dashboard
+  webhooks: each domain registers its own endpoints, so test deliveries never hit the production endpoint
+  balance: development runs draw down the development domain's balance, not the paid production balance
+  blast_radius: a leaked development secret cannot call the Server API for the production domain
+test_tooling:
+- name: Verify
+  location: dashboard Webhooks tab
+  action: sends a signed webhook.ping to the endpoint; a 2xx flips its status to Active
+- name: Send test event
+  location: dashboard Webhooks tab
+  action: delivers a sample risk event on demand
+- name: local tunnel
+  action: >-
+    development webhooks need a publicly reachable URL; run a tunnel to the local server and register
+    it as an endpoint on the development domain
+free_tier:
+  identifications: 5000
+  recurrence: one-time
+  credit_card_required: false
+  note: >-
+    functionally the trial surface — identical detection stack to the paid tiers, so a developer can
+    integrate end to end without a sales conversation
+test_values: []
+test_values_note: >-
+  None published, and none possible by design — scores come from the real environment of the visitor
+  loading the page. The docs warn that a legitimate visitor can score high (corporate proxy, VPN,
+  privacy browser) and that thresholds should be tuned against a real distribution.
+csp_requirements:
+  script_src: [cdn.shieldlabs.ai or dev.cdn.shieldlabs.ai, cdn.jsdelivr.net]
+  connect_src: [rest.shieldlabs.ai, webrtc.shieldlabs.ai, 'stun:ice.shieldlabs.ai:3478']
+  docs: https://docs.shieldlabs.ai/setup/csp

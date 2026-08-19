@@ -1,0 +1,178 @@
+generated: '2026-08-19'
+method: searched
+source: https://github.com/ShieldLabs-ai
+docs: https://docs.shieldlabs.ai/setup/snippet
+note: >-
+  ShieldLabs maintains a first-party GitHub organization (github.com/ShieldLabs-ai, org blog
+  https://shieldlabs.ai) holding eight client libraries plus an examples repo and the public OpenAPI
+  repo. THE HEADLINE FINDING IS DISTRIBUTION, NOT CODE: not one of the eight libraries is published to
+  any package registry. registry.npmjs.org returns 404 for @shieldlabs/js, @shieldlabs/react,
+  @shieldlabs/vue, @shieldlabs/next and @shieldlabs/node; pypi.org returns 404 for shieldlabs;
+  repo.packagist.org returns 404 for shieldlabs/shieldlabs; proxy.golang.org returns an empty version
+  list for github.com/ShieldLabs-ai/shieldlabs-go. No repo carries a git tag or a GitHub release.
+  Every version below is the string declared in the repo manifest, which is NOT a published version —
+  a consumer cannot `npm install` or `pip install` any of these today. Do not read these as shipped
+  SDKs. Separately, the docs themselves state there is no native SDK and show the raw ES-module
+  snippet in every integration example, which is consistent with the registry evidence.
+  The npm package @shieldlabs/cra-template-frontend (last published 2020-02-13) is a DIFFERENT
+  organization and is deliberately excluded.
+packages:
+- language: javascript
+  registry: npm
+  name: "@shieldlabs/js"
+  url: https://github.com/ShieldLabs-ai/shieldlabs-js
+  install: null
+  official: true
+  version: null
+  published: null
+  manifest_version: 0.1.0
+  registry_status: 404
+  registry_url_probed: https://registry.npmjs.org/@shieldlabs%2fjs
+  repo_last_push: '2026-07-27'
+  note: >-
+    Browser loader that pulls the collection agent from the CDN and returns identification results.
+    Source exists and is current; nothing is published to npm and the repo has no tags, so version is
+    null. 0.1.0 is the manifest string only.
+- language: javascript
+  registry: npm
+  name: "@shieldlabs/react"
+  url: https://github.com/ShieldLabs-ai/shieldlabs-react
+  install: null
+  official: true
+  version: null
+  published: null
+  manifest_version: 0.0.0
+  registry_status: 404
+  repo_last_push: '2026-07-27'
+  note: React bindings for the browser loader. Unpublished; manifest version is still 0.0.0.
+- language: javascript
+  registry: npm
+  name: "@shieldlabs/vue"
+  url: https://github.com/ShieldLabs-ai/shieldlabs-vue
+  install: null
+  official: true
+  version: null
+  published: null
+  manifest_version: 0.0.0
+  registry_status: 404
+  repo_last_push: '2026-07-27'
+  note: Vue bindings for the browser loader. Unpublished; manifest version is still 0.0.0.
+- language: javascript
+  registry: npm
+  name: "@shieldlabs/next"
+  url: https://github.com/ShieldLabs-ai/shieldlabs-next
+  install: null
+  official: true
+  version: null
+  published: null
+  manifest_version: 0.0.0
+  registry_status: 404
+  repo_last_push: '2026-07-27'
+  note: Next.js integration for the browser loader. Unpublished; manifest version is still 0.0.0.
+- language: javascript
+  registry: npm
+  name: "@shieldlabs/node"
+  url: https://github.com/ShieldLabs-ai/shieldlabs-node
+  install: null
+  official: true
+  version: null
+  published: null
+  manifest_version: 0.1.0
+  registry_status: 404
+  repo_last_push: '2026-07-27'
+  note: >-
+    Server SDK for Node.js — API client, webhook signature verification, and types. Requires Node >=18.
+    Unpublished to npm.
+- language: python
+  registry: pypi
+  name: shieldlabs
+  url: https://github.com/ShieldLabs-ai/shieldlabs-python
+  install: null
+  official: true
+  version: null
+  published: null
+  manifest_version: 0.1.0
+  registry_status: 404
+  registry_url_probed: https://pypi.org/pypi/shieldlabs/json
+  repo_last_push: '2026-07-27'
+  note: >-
+    Server SDK for Python (hatchling, requires-python >=3.8, MIT, no runtime dependencies,
+    classifier "Development Status :: 4 - Beta"). Not on PyPI.
+- language: go
+  registry: go-modules
+  name: github.com/ShieldLabs-ai/shieldlabs-go
+  url: https://github.com/ShieldLabs-ai/shieldlabs-go
+  install: null
+  official: true
+  version: null
+  published: null
+  manifest_version: null
+  registry_status: empty-version-list
+  registry_url_probed: https://proxy.golang.org/github.com/!shield!labs-ai/shieldlabs-go/@v/list
+  repo_last_push: '2026-07-27'
+  note: >-
+    Server SDK for Go (module github.com/ShieldLabs-ai/shieldlabs-go, go 1.21). The Go module proxy
+    returns no versions because the repo carries no semver tag, so `go get` cannot resolve a release.
+- language: php
+  registry: packagist
+  name: shieldlabs/shieldlabs
+  url: https://github.com/ShieldLabs-ai/shieldlabs-php
+  install: null
+  official: true
+  version: null
+  published: null
+  manifest_version: null
+  registry_status: 404
+  registry_url_probed: https://repo.packagist.org/p2/shieldlabs/shieldlabs.json
+  repo_last_push: '2026-07-27'
+  note: >-
+    Server SDK for PHP (PSR-4 ShieldLabs\, requires php >=8.1 + ext-curl + ext-json, MIT).
+    Not registered on Packagist.
+- language: javascript
+  registry: cdn
+  name: shieldlabs-snippet
+  url: https://cdn.shieldlabs.ai/snippet.js
+  install: '<script type="module">await import(''https://cdn.shieldlabs.ai/snippet.js?publicKey=YOUR_PUBLIC_KEY'')</script>'
+  official: true
+  version: null
+  published: null
+  registry_status: 200
+  note: >-
+    The collection agent, and the only ShieldLabs client artifact a customer can actually load today.
+    Distributed unpinned: every documented example loads the bare /snippet.js and floats to whatever
+    is current, so a consumer has no way to tell which build they are running or to hold a version.
+    There is no CDN metadata endpoint to query. A separate development host
+    dev.cdn.shieldlabs.ai/snippet.js serves the same module for non-production domains.
+- language: none
+  registry: github
+  name: shieldlabs-openapi
+  url: https://github.com/ShieldLabs-ai/shieldlabs-openapi
+  official: true
+  version: null
+  published: null
+  registry_status: 200
+  note: >-
+    Public OpenAPI 3.1 specification repo, MIT-licensed, self-described as the source of truth for the
+    SDKs and the API reference. Also carries a JSON Schema for the identification.scored webhook and a
+    SIGNATURE.md verification guide. This is the artifact the rest of this repo is harvested from.
+- language: none
+  registry: github
+  name: shieldlabs-examples
+  url: https://github.com/ShieldLabs-ai/shieldlabs-examples
+  official: true
+  version: null
+  published: null
+  registry_status: 200
+  note: Example apps for signup gating, checkout risk, paywall and account-sharing decisions.
+summary:
+  first_party_libraries: 8
+  published_to_a_registry: 0
+  registries_probed:
+  - npm
+  - pypi
+  - packagist
+  - go-modules
+  tagged_releases: 0
+  distribution_reality: >-
+    Source-available on GitHub, installable by nobody through a package manager. The only shipped
+    client artifact is the unpinned CDN snippet.

@@ -1,0 +1,36 @@
+generated: '2026-08-19'
+method: searched
+source: https://docs.shieldlabs.ai/changelog
+note: >-
+  A dated, human-readable changelog exists but it is thin: one entry, covering the June 2026
+  documentation rebuild. There is no feed, no per-release version numbers, and no history before it.
+  The entry is unusually candid — it is a correction notice stating that the previous documentation
+  described a score range and features the product does not have, and it enumerates what was wrong.
+scheme: dated sections, newest first
+feed: null
+current_version:
+  api: v1
+  spec: '1.2'
+  webhook_schema: '2026-06-01'
+entries:
+- date: '2026-06'
+  title: Documentation rebuilt from the production codebase
+  breaking: true
+  breaking_note: >-
+    Breaking for anyone who integrated against the previous docs: the documented score range and
+    several documented features did not exist in the product.
+  corrections:
+  - The score is the Risk Score, 0-100. There is no "Trust Score" and no 0-999 scale.
+  - There is no in-product rules engine; ShieldLabs returns a score and signals, the customer decides.
+  - Only four band labels exist — Clean (0-9), Low (10-29), Medium (30-59), High (60-100). There is no "Bot" or "Banned" band.
+  - The dashboard feature is the Patterns catalog, not "Behavior Patterns", and there is no "velocity" pattern.
+  - 999 is an internal rate-limit sentinel, never a customer Risk Score.
+  highlights:
+  - Risk Score 0-100 with an explainable Details array of the signals that fired and their points.
+  - Single signed webhook per identification; waits up to 60s for an optional follow-up network check, then always delivers.
+  - At-most-once webhook delivery, keyed per endpoint with whsec_…; handlers must be idempotent on request_id.
+  - 8 ready-made relationship Patterns surfaced on the dashboard as Suspicious or Dangerous.
+  - Visitors and Traffic Sources analytics ranking each channel by anonymous-traffic share.
+  - Server API documented — History API reads plus domain profile, with Authorization Bearer + X-Shield-Domain.
+  - Six identifiers documented — DeviceID, VisitorID, CookieID, SessionID, RequestID, and the caller-supplied UserHID.
+entry_count: 1

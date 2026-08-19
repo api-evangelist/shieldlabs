@@ -1,0 +1,88 @@
+generated: '2026-08-19'
+method: derived
+source: openapi/shieldlabs-server-api-openapi.yml + https://docs.shieldlabs.ai/privacy
+note: >-
+  Cross-cutting standards assertion, derived from the provider's own spec and docs. ShieldLabs makes
+  NO regulatory compliance claim — its privacy page says so in terms ("It is not legal advice and
+  makes no regulatory compliance claim") — and publishes no certifications, no trust center and no
+  audit reports. That absence is the finding; nothing here should be read as a compliance posture.
+standards:
+- id: openapi-3.1
+  conforms: true
+  evidence: openapi/shieldlabs-server-api-openapi.yml declares openapi 3.1.0 and parses
+- id: json-schema-2020-12
+  conforms: true
+  evidence: >-
+    json-schema/shieldlabs-identification-scored.schema.json is a published 2020-12 schema for the
+    webhook payload, derived by the provider 1:1 from the live Shield.Core code
+- id: openapi-webhooks
+  conforms: true
+  evidence: the spec uses the OpenAPI 3.1 top-level `webhooks` object for identification.scored
+- id: oauth2
+  conforms: false
+  evidence: no oauth2 securityScheme; both schemes are http bearer
+- id: oidc
+  conforms: false
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: >-
+    error bodies are non-uniform — {"error": string}, empty, or a bare JSON string depending on
+    surface and status; the docs instruct clients to branch on status code, not on a body field
+- id: rfc9116-security-txt
+  conforms: false
+  evidence: /.well-known/security.txt returns 404 on all five probed hosts
+- id: rfc8594-sunset-header
+  conforms: false
+  evidence: no Sunset or Deprecation header documented on any surface
+- id: rfc6750-bearer-token
+  conforms: true
+  evidence: both securitySchemes are type http, scheme bearer, sent as Authorization Bearer
+- id: hmac-sha256-webhook-signing
+  conforms: true
+  evidence: >-
+    X-Shield-Signature sha256=<hex> over the raw body, per-endpoint whsec_ secret, constant-time
+    compare — documented with reference handlers in Node, Go and Python
+- id: idempotency
+  conforms: true
+  evidence: >-
+    request_id is published as the idempotency key for at-most-once webhook delivery; the spec states
+    it verbatim. Note this is a consumer-side dedup contract, not an Idempotency-Key request header
+- id: pagination
+  conforms: true
+  evidence: limit/offset with a {data,total} envelope on the History API; limit-only on the Management API
+- id: rate-limit-headers-rfc9331
+  conforms: false
+  evidence: no RateLimit-* or X-RateLimit-* or Retry-After headers documented; status code only
+- id: a2a-agent-card
+  conforms: partial
+  evidence: >-
+    a card is served at docs.shieldlabs.ai/.well-known/agent-card.json but grades `flavored` against
+    A2A 1.0.0 — see a2a/shieldlabs-a2a.yml
+- id: mcp
+  conforms: true
+  evidence: >-
+    live unauthenticated MCP endpoint at docs.shieldlabs.ai/mcp answering tools/list, advertised at
+    /.well-known/mcp.json — documentation scope only
+- id: llmstxt
+  conforms: true
+  evidence: /llms.txt served on both shieldlabs.ai and docs.shieldlabs.ai, plus an llms-full.txt
+- id: gdpr
+  conforms: unclaimed
+  evidence: >-
+    the privacy policy describes processor/controller roles, subprocessors and data-subject request
+    handling, but the docs explicitly decline to make a compliance claim
+- id: ccpa-cpra
+  conforms: unclaimed
+  evidence: a "U.S. State Privacy (including CCPA/CPRA)" section exists in the privacy policy
+- id: soc2
+  conforms: false
+  evidence: no SOC 2 report, trust center or certification page found on any probed host
+- id: iso-27001
+  conforms: false
+  evidence: no certification published
+- id: pci-dss
+  conforms: false
+- id: hipaa
+  conforms: false
+certifications_published: []
+trust_center: null

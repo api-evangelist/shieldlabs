@@ -1,0 +1,73 @@
+generated: '2026-08-19'
+method: searched
+source: https://docs.shieldlabs.ai/api/webhooks
+derived_from: openapi/shieldlabs-server-api-openapi.yml
+spec_type: Webhooks
+asyncapi_published: false
+note: >-
+  ShieldLabs publishes NO AsyncAPI document — probed /asyncapi.yaml and /asyncapi.json on every host
+  and searched the GitHub org, which holds no event spec. It does, however, publish a real and unusually
+  well-specified webhook contract: the event surface is modelled with the OpenAPI 3.1 top-level
+  `webhooks` object in the provider's own spec, AND a standalone JSON Schema 2020-12 document derived
+  1:1 from the live Shield.Core code, AND a signature-verification guide with reference handlers.
+  This webhook catalog is captured here rather than fabricating an AsyncAPI.
+  DELIVERY MODEL MATTERS HERE: delivery is AT-MOST-ONCE WITH NO RETRIES. There is exactly one attempt
+  per identification. If the consumer's endpoint is down, that score is not redelivered — it must be
+  recovered by reading the History API by request_id. That is the single most consequential fact on
+  this surface and it is easy to miss.
+transport: HTTPS POST to customer-registered endpoints
+registration: per domain, in the dashboard Webhooks tab; multiple endpoints per domain supported
+security:
+  signature_header: 'X-Shield-Signature: sha256=<hex>'
+  algorithm: HMAC-SHA256 over the RAW request body
+  key: per-endpoint signing secret, format whsec_…
+  key_note: NOT the Secret Key — each registered endpoint gets its own secret
+  verification: constant-time compare; reject with 401 on mismatch
+  transport_requirement: the callback URL must be HTTPS
+  docs: https://docs.shieldlabs.ai/security
+delivery:
+  guarantee: at-most-once
+  retries: false
+  latency: >-
+    waits up to 60 seconds for an optional follow-up network check, then always delivers
+  ack: return 200 quickly
+  idempotency_key: data.request_id
+  recovery_path: >-
+    GET /api/v1/history/request_id/{request_id} on account.shieldlabs.ai — free, does not consume
+    request balance
+  billing: webhook deliveries are never billed
+envelope:
+  schema: openapi/shieldlabs-server-api-openapi.yml#/components/schemas/WebhookEvent
+  json_schema: json-schema/shieldlabs-identification-scored.schema.json
+  example: examples/shieldlabs-identification-scored-example.json
+  fields: [event_type, schema_version, created_at, data]
+  schema_version: '2026-06-01'
+  signature_in_body: false
+events:
+- name: identification.scored
+  description: >-
+    One signed envelope per scored visit, carrying the identifiers, the 0-100 Risk Score, the weighted
+    signals that produced it, 18 denormalized detection flags, public and local IP with country,
+    device/browser/OS, and traffic-source attribution.
+  payload_schema: openapi/shieldlabs-server-api-openapi.yml#/components/schemas/WebhookScoredData
+  required_fields: [request_id, visitor_id, device_id, risk_score, signals, detection_flags, observed_at]
+  cardinality: one per identification
+- name: webhook.ping
+  description: >-
+    Test/verification delivery with no `data` object. Sent by the dashboard Verify action; when the
+    endpoint answers 2xx its status flips to Active. A "Send test event" action delivers a sample
+    risk event at any time.
+  payload_schema: null
+  cardinality: on demand
+consumer_requirements:
+- Verify X-Shield-Signature against HMAC-SHA256 of the RAW bytes before parsing — re-serializing the body breaks the signature.
+- Deduplicate on request_id; handlers must be idempotent.
+- Short-circuit on event_type == "webhook.ping" before touching data.
+- Guard for risk_score > 100 — a 999 is a gateway rate-limit ban marker, not a maximum-risk visitor.
+probes:
+- url: https://docs.shieldlabs.ai/asyncapi.yaml
+  status: 404
+- url: https://shieldlabs.ai/asyncapi.yaml
+  status: 404
+- url: https://api.shieldlabs.ai/asyncapi.json
+  status: 404

@@ -1,0 +1,54 @@
+generated: '2026-08-19'
+method: derived
+source: mcp/shieldlabs-mcp.yml + openapi/shieldlabs-server-api-openapi.yml
+note: >-
+  Crosswalk between the live MCP tool set and the published OpenAPI. The headline finding is a total
+  divergence: ShieldLabs' MCP server is a documentation server, so ZERO of its three tools bind to a
+  REST operation, and ALL THREE of the Server API operations are unreachable from MCP. An agent that
+  discovers ShieldLabs through MCP can read every word of the docs and still cannot look up a visitor,
+  read a Risk Score, or check a balance. Both surfaces are real; neither is a projection of the other.
+surfaces:
+  openapi:
+    file: openapi/shieldlabs-server-api-openapi.yml
+    operations: 3
+    webhooks: 1
+    gated: false
+  mcp:
+    url: https://docs.shieldlabs.ai/mcp
+    tools: 3
+    gated: false
+    scope: documentation-only
+  graphql: null
+crosswalk: []
+mcp_only:
+- tool: search_shield_labs
+  reason: Documentation search over the Mintlify docs corpus. No REST equivalent — ShieldLabs publishes no search API.
+- tool: query_docs_filesystem_shield_labs
+  reason: Read-only virtual filesystem over docs pages and specs. Docs-platform capability, not a product API.
+- tool: submit_feedback
+  reason: Documentation feedback submission. No REST equivalent.
+rest_only:
+- capability: History reads
+  operations:
+  - searchHistoryAccount
+  - searchHistoryV1
+  reason: >-
+    Snapshot lookup by identifier (ip, user_hid, visitor_id, request_id, device_id, session_id,
+    cookie_id) on both the History API and the Management API. No MCP tool exposes it.
+- capability: Account state
+  operations:
+  - getProfileV1
+  reason: Domain profile, remaining request balance and masked keys. No MCP tool exposes it.
+event_only:
+- surface: webhook
+  operation: identificationScored
+  reason: >-
+    The primary ShieldLabs delivery path — identification.scored pushed to the customer endpoint — is
+    outbound only. It has no REST poll equivalent and no MCP tool.
+coverage:
+  tools_named: 3
+  tools_bound_to_rest: 0
+  mcp_only: 3
+  rest_operations_total: 3
+  rest_operations_with_a_tool: 0
+  rest_coverage_pct: 0

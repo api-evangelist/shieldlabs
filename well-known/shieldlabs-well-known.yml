@@ -1,0 +1,104 @@
+generated: '2026-08-19'
+method: searched
+source: live probes of every ShieldLabs host
+note: >-
+  Five /.well-known paths probed on five hosts (shieldlabs.ai, www.shieldlabs.ai, api.shieldlabs.ai,
+  account.shieldlabs.ai, docs.shieldlabs.ai). The apex, www and both API hosts serve nothing at
+  /.well-known/ — the apex returns the Next.js 404 shell and the API hosts return a plain
+  "404 page not found". The documentation host is the only one that serves real documents, and it
+  serves three: an A2A agent card, an MCP server descriptor, and an agent skill.
+hosts_probed:
+- https://shieldlabs.ai
+- https://www.shieldlabs.ai
+- https://api.shieldlabs.ai
+- https://account.shieldlabs.ai
+- https://docs.shieldlabs.ai
+documents:
+- host: https://docs.shieldlabs.ai
+  path: /.well-known/agent-card.json
+  status: 200
+  content_type: application/json
+  file: shieldlabs-agent-card.json
+- host: https://docs.shieldlabs.ai
+  path: /.well-known/mcp.json
+  status: 200
+  content_type: application/json
+  file: shieldlabs-mcp.json
+- host: https://docs.shieldlabs.ai
+  path: /.well-known/agent-skills/shieldlabs/skill.md
+  status: 200
+  content_type: text/markdown
+  file: ../skills/shieldlabs-shieldlabs.md
+  note: Provider-published Agent Skill, referenced from the agent card's skills[0].url.
+- host: https://docs.shieldlabs.ai
+  path: /.well-known/security.txt
+  status: 404
+- host: https://docs.shieldlabs.ai
+  path: /.well-known/openid-configuration
+  status: 404
+- host: https://docs.shieldlabs.ai
+  path: /.well-known/oauth-authorization-server
+  status: 404
+- host: https://docs.shieldlabs.ai
+  path: /.well-known/api-catalog
+  status: 404
+- host: https://docs.shieldlabs.ai
+  path: /.well-known/ai-plugin.json
+  status: 404
+- host: https://docs.shieldlabs.ai
+  path: /.well-known/agent.json
+  status: 404
+- host: https://shieldlabs.ai
+  path: /.well-known/security.txt
+  status: 404
+- host: https://shieldlabs.ai
+  path: /.well-known/openid-configuration
+  status: 404
+- host: https://shieldlabs.ai
+  path: /.well-known/oauth-authorization-server
+  status: 404
+- host: https://shieldlabs.ai
+  path: /.well-known/api-catalog
+  status: 404
+- host: https://shieldlabs.ai
+  path: /.well-known/ai-plugin.json
+  status: 404
+- host: https://shieldlabs.ai
+  path: /.well-known/agent-card.json
+  status: 404
+- host: https://api.shieldlabs.ai
+  path: /.well-known/security.txt
+  status: 404
+- host: https://api.shieldlabs.ai
+  path: /.well-known/openid-configuration
+  status: 404
+- host: https://api.shieldlabs.ai
+  path: /.well-known/oauth-authorization-server
+  status: 404
+- host: https://api.shieldlabs.ai
+  path: /.well-known/api-catalog
+  status: 404
+- host: https://api.shieldlabs.ai
+  path: /.well-known/ai-plugin.json
+  status: 404
+- host: https://account.shieldlabs.ai
+  path: /.well-known/security.txt
+  status: 404
+- host: https://account.shieldlabs.ai
+  path: /.well-known/openid-configuration
+  status: 404
+- host: https://account.shieldlabs.ai
+  path: /.well-known/oauth-authorization-server
+  status: 404
+- host: https://account.shieldlabs.ai
+  path: /.well-known/api-catalog
+  status: 404
+- host: https://account.shieldlabs.ai
+  path: /.well-known/ai-plugin.json
+  status: 404
+summary:
+  paths_probed: 70
+  documents_found: 3
+  security_txt: false
+  openid_configuration: false
+  api_catalog: false

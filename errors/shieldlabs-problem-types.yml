@@ -1,0 +1,87 @@
+generated: '2026-08-19'
+method: searched
+source: https://docs.shieldlabs.ai/errors
+derived_from: openapi/shieldlabs-server-api-openapi.yml
+format: none
+note: >-
+  ShieldLabs does NOT use RFC 9457 problem+json, and does not use one error envelope at all. The docs
+  say so explicitly: "Error bodies are not uniform, so branch on the HTTP status code, not on a body
+  field." Three different shapes are in play across the surfaces — a {"error": "..."} object from the
+  ingest and network-check gateways, an EMPTY body from the Server API on 401 and 402, and a BARE JSON
+  STRING (e.g. "request_id is not supported") from the Server API on 400 and 404. There are no
+  machine-readable error codes anywhere: the status code is the only stable, parseable signal.
+envelopes:
+- surface: REST ingest + network-check gateways (rest.shieldlabs.ai) and Management API
+  media_type: application/json
+  shape: '{"error": "<human string>"}'
+  statuses: [429, 503]
+  machine_readable_code: false
+- surface: Server API
+  shape: empty body
+  statuses: [401, 402]
+  machine_readable_code: false
+- surface: Server API
+  shape: bare JSON string
+  statuses: [400, 404]
+  example: '"request_id is not supported"'
+  machine_readable_code: false
+problems:
+- status: 400
+  title: Bad parameters
+  detail: >-
+    Server API only. A malformed value, for example a non-UUID where a UUID is required. Body is a
+    bare JSON string.
+  remediation: Fix the request.
+  source_operation: openapi/shieldlabs-server-api-openapi.yml#searchHistoryV1
+- status: 401
+  title: Bad credentials or disabled domain
+  detail: >-
+    Empty body. Check the Server API credential (Authorization: Bearer) or ?publicKey= on the
+    snippet, and that the domain is enabled.
+  remediation: Verify the key and the domain status in the dashboard.
+  source_operation: openapi/shieldlabs-server-api-openapi.yml#searchHistoryAccount
+- status: 402
+  title: Out of requests
+  detail: >-
+    Empty body. The domain's request balance is exhausted. The Management API History path bills one
+    request per returned row (a zero-row lookup still bills one); History reads on
+    account.shieldlabs.ai are free.
+  remediation: Top up or upgrade the plan.
+  source_operation: openapi/shieldlabs-server-api-openapi.yml#searchHistoryV1
+- status: 404
+  title: Unsupported history type
+  detail: >-
+    Server API only. Body is a bare JSON string. A SUPPORTED type that matches no records returns 200
+    with an empty array — and still bills one request — not 404.
+  supported_types: [ip, user_hid, visitor_id, request_id, device_id, session_id, cookie_id]
+  remediation: Use a supported identifier type.
+  source_operation: openapi/shieldlabs-server-api-openapi.yml#searchHistoryV1
+- status: 429
+  title: Rate-limited
+  detail: >-
+    Ingest and network-check gateways only, not the Server API. Body is {"error": "too many
+    requests"}. Crossing 20 requests/minute from one IP bans that IP for 1 hour.
+  remediation: Back off; do not proxy snippet traffic through one server IP.
+  cross_reference: rate-limits/shieldlabs-rate-limits.yml
+  source_operation: openapi/shieldlabs-server-api-openapi.yml#searchHistoryV1
+- status: 500
+  title: Internal error
+  detail: Transient.
+  remediation: Retry with backoff.
+- status: 503
+  title: Server busy
+  detail: >-
+    Ingest and network-check gateways only. Body is {"error": "server is busy"}. The 512-connection
+    concurrency cap was hit.
+  remediation: Retry with a short jittered backoff.
+  source_operation: openapi/shieldlabs-server-api-openapi.yml#searchHistoryV1
+traps:
+- name: 999 rate-limit sentinel
+  detail: >-
+    A rate-limit ban writes a score of 999 to the snapshot. It is not capped to 100 and can reach a
+    webhook handler or a History row. Guard for score > 100 before reading the risk band, otherwise a
+    gateway ban is read as a maximum-risk visitor.
+- name: empty 200 still bills
+  detail: >-
+    A supported identifier type with no matching records returns 200 with an empty result on the
+    Management API History path and still consumes one request from the balance.

@@ -1,0 +1,66 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for the ShieldLabs Server API
+  version: 1.0.0
+extends: openapi/shieldlabs-server-api-openapi.yml
+x-provenance:
+  generated: '2026-08-19'
+  method: generated
+  source: >-
+    Derived from the artifacts in this repo. Captures API Evangelist annotations without mutating the
+    provider's harvested spec at openapi/_original/.
+actions:
+- target: $.info
+  update:
+    x-apievangelist-artifacts:
+      authentication: authentication/shieldlabs-authentication.yml
+      conventions: conventions/shieldlabs-conventions.yml
+      errors: errors/shieldlabs-problem-types.yml
+      rate_limits: rate-limits/shieldlabs-rate-limits.yml
+      plans: plans/shieldlabs-plans-pricing.yml
+      lifecycle: lifecycle/shieldlabs-lifecycle.yml
+      data_model: data-model/shieldlabs-data-model.yml
+      webhooks: asyncapi/shieldlabs-webhooks.yml
+      mcp: mcp/shieldlabs-mcp.yml
+      agent_card: a2a/shieldlabs-a2a.yml
+    x-apievangelist-spec-source: https://github.com/ShieldLabs-ai/shieldlabs-openapi
+    x-apievangelist-spec-note: >-
+      Two published copies of this spec exist. The docs-hosted copy at
+      https://docs.shieldlabs.ai/references/openapi.yaml omits the stun_request_seen detection flag
+      that the provider's own OpenAPI repo carries. The repo copy is archived here as the source of
+      truth, per that repo's own README.
+- target: $.paths['/api/v1/history/{search_type}/{value}'].get
+  update:
+    x-apievangelist-billing: free — does not consume request balance
+    x-apievangelist-recommended: true
+    x-apievangelist-pagination: limit/offset, {data,total} envelope, newest first
+    x-apievangelist-casing: snake_case
+- target: $.paths['/v1/history/{type}/{value}'].get
+  update:
+    x-apievangelist-billing: >-
+      bills one request per returned row, minimum one — a zero-row lookup still bills one
+    x-apievangelist-recommended: false
+    x-apievangelist-superseded-by: searchHistoryAccount
+    x-apievangelist-casing: PascalCase
+    x-apievangelist-rate-limited: 20 requests/minute per source IP, then a 1-hour IP ban
+- target: $.paths['/v1/profile'].get
+  update:
+    x-apievangelist-billing: free (0 requests)
+- target: $.webhooks.identificationScored.post
+  update:
+    x-apievangelist-delivery: at-most-once, no retries
+    x-apievangelist-idempotency-key: data.request_id
+    x-apievangelist-recovery: >-
+      a missed delivery is recovered by reading GET /api/v1/history/request_id/{request_id} on
+      account.shieldlabs.ai
+    x-apievangelist-json-schema: json-schema/shieldlabs-identification-scored.schema.json
+- target: $.components.schemas.WebhookScoredData.properties.risk_score
+  update:
+    x-apievangelist-sentinel: >-
+      A value of 999 is a gateway rate-limit ban marker, not a Risk Score, and it is NOT capped to
+      100. Guard for values above 100 before reading the band.
+    x-apievangelist-bands:
+      clean: 0-9
+      low: 10-29
+      medium: 30-59
+      high: 60-100

@@ -1,14 +1,49 @@
+aid: shieldlabs
 name: ShieldLabs
-description: >-
-  Anonymous visitor identification and fraud-prevention platform. A browser JS snippet collects 100+ signals and returns
-  a persistent visitor/device ID plus an explainable 0-100 risk score; the customer's own code makes the
-  allow/challenge/block decision. Offers server-side REST APIs (History and Management), outbound webhooks, and
-  agent-readable llms.txt documentation.
+description: 'Anonymous visitor identification and fraud-prevention platform. A browser ES-module snippet
+  loaded from cdn.shieldlabs.ai collects 100+ device and network signals and returns six persistent identifiers
+  (DeviceID, VisitorID, CookieID, SessionID, RequestID and a caller-supplied hashed UserHID) plus an explainable
+  0-100 Risk Score built from weighted anonymity signals — VPN, proxy, Tor, privacy relay, datacenter,
+  IP reputation, anti-detect browser, geolocation spoofing, OS mismatch, incognito, browser automation
+  and suspicious paid clicks. ShieldLabs deliberately makes no allow/challenge/block decision: it returns
+  the score and the signals behind it, and the customer''s own code owns the verdict. Delivery is a signed
+  at-most-once webhook (identification.scored, HMAC-SHA256 in X-Shield-Signature, no retries), backed
+  by two server-side REST surfaces — a free History API on account.shieldlabs.ai and a billed Management
+  API on api.shieldlabs.ai — described by a public OpenAPI 3.1 specification the company maintains in
+  its own MIT-licensed GitHub repo. Self-serve and per-identification priced, with a 5,000-identification
+  free tier and no sales gate.'
+image: https://shieldlabs.ai/og/home.png
 url: https://shieldlabs.apievangelist.com/apis.yml
 created: '2026-08-19'
 modified: '2026-08-19'
 specificationVersion: '0.21'
 tags:
+- fraud-detection
+- abuse-prevention
+- visitor-identification
+- device-fingerprinting
+- bot-detection
+- vpn-proxy-detection
+- risk-scoring
+- identity
+- security
+- webhooks
+- anti-fraud
+- traffic-quality
+apis:
+- name: ShieldLabs Server API
+  description: 'Server-side REST API described by a public OpenAPI 3.1 specification (three operations
+    plus one OpenAPI-3.1 webhook). Two hosts, implemented by two different internal services and diverging
+    in casing, envelope, auth headers, billing and rate limiting: the History API on https://account.shieldlabs.ai/api
+    (Private API Key, `Authorization: Bearer sec_…`, snake_case, `{data,total}` envelope with limit/offset,
+    free — does not consume request balance) and the Management API on https://api.shieldlabs.ai (Secret
+    Key plus an `X-Shield-Domain` header, PascalCase bare arrays, bills one request per returned row with
+    a minimum of one). The primary delivery path is outbound: a signed identification.scored webhook carrying
+    the Risk Score, the weighted signals, 18 detection flags and traffic-source attribution, delivered
+    at most once with no retries and recovered through a free History read on request_id.'
+  humanURL: https://docs.shieldlabs.ai/api/overview
+  baseURL: https://api.shieldlabs.ai
+  tags:
   - fraud-detection
   - abuse-prevention
   - visitor-identification
@@ -18,43 +53,150 @@ tags:
   - risk-scoring
   - identity
   - security
-apis:
-  - name: ShieldLabs Server API
-    description: >-
-      Server-side REST APIs: History API (base https://account.shieldlabs.ai/api, Bearer sec_ key) for reads that do not
-      consume paid requests, and Management API (base https://api.shieldlabs.ai, Bearer secret + X-Shield-Domain) for
-      domain profile, balance, and per-row-billed history. Also outbound webhooks pushing score/signals. Documented
-      narratively with curl examples; no machine-readable OpenAPI/AsyncAPI/GraphQL/Postman contract found publicly.
-    humanURL: https://docs.shieldlabs.ai/api/overview
-    baseURL: https://api.shieldlabs.ai
-    tags:
-      - fraud-detection
-      - abuse-prevention
-      - visitor-identification
-      - device-fingerprinting
-      - bot-detection
-      - vpn-proxy-detection
-      - risk-scoring
-      - identity
-      - security
-    properties:
-      - type: Documentation
-        url: https://docs.shieldlabs.ai/api/overview
-      - type: Documentation
-        url: https://docs.shieldlabs.ai/api/server-api
-      - type: Documentation
-        url: https://docs.shieldlabs.ai/api/webhooks
-      - type: LLMsTxt
-        url: https://shieldlabs.ai/llms.txt
-      - type: LLMsTxt
-        url: https://docs.shieldlabs.ai/llms.txt
-      - type: LLMsTxt
-        url: https://docs.shieldlabs.ai/llms-full.txt
+  - webhooks
+  properties:
+  - type: OpenAPI
+    url: openapi/shieldlabs-server-api-openapi.yml
+  - type: OpenAPI
+    url: https://docs.shieldlabs.ai/references/openapi.yaml
+  - type: JSONSchema
+    url: json-schema/shieldlabs-identification-scored.schema.json
+  - type: Examples
+    url: examples/shieldlabs-identification-scored-example.json
+  - type: Overlay
+    url: overlays/shieldlabs-server-api-overlay.yaml
+  - type: Documentation
+    url: https://docs.shieldlabs.ai/api/overview
+  - type: Documentation
+    url: https://docs.shieldlabs.ai/api/server-api
+  - type: Documentation
+    url: https://docs.shieldlabs.ai/api/webhooks
+  - type: APIReference
+    url: https://docs.shieldlabs.ai/api/server-api
+  - type: DataModel
+    url: data-model/shieldlabs-data-model.yml
+  - type: ToolCrosswalk
+    url: mcp/shieldlabs-tool-crosswalk.yml
+  - type: LLMsTxt
+    url: https://shieldlabs.ai/llms.txt
+  - type: LLMsTxt
+    url: https://docs.shieldlabs.ai/llms.txt
 maintainers:
-  - FN: ShieldLabs
-    url: https://shieldlabs.ai
+- FN: ShieldLabs
+  url: https://shieldlabs.ai
+  email: contact@shieldlabs.ai
 generated:
   by: apis.io/add
   model: claude-opus-4-8
   confidence: 90
   at: '2026-08-19T16:02:26.724Z'
+common:
+- type: DeveloperPortal
+  url: https://docs.shieldlabs.ai/
+- type: Documentation
+  url: https://docs.shieldlabs.ai/
+- type: APIReference
+  url: https://docs.shieldlabs.ai/api/server-api
+- type: GettingStarted
+  url: https://docs.shieldlabs.ai/quickstart
+- type: Support
+  url: https://docs.shieldlabs.ai/support
+- type: Blog
+  url: https://shieldlabs.ai/blog
+- type: BlogRSS
+  url: https://shieldlabs.ai/rss.xml
+- type: GitHubOrganization
+  url: https://github.com/ShieldLabs-ai
+- type: SourceCode
+  url: https://github.com/ShieldLabs-ai/shieldlabs-openapi
+- type: Pricing
+  url: https://shieldlabs.ai/pricing
+- type: SignUp
+  url: https://app.shieldlabs.ai/signup
+- type: Login
+  url: https://app.shieldlabs.ai/login
+- type: TermsOfService
+  url: https://docs.shieldlabs.ai/legal/terms
+- type: PrivacyPolicy
+  url: https://docs.shieldlabs.ai/legal/privacy-policy
+- type: Twitter
+  url: https://x.com/Shieldlabs_ai
+- type: LinkedIn
+  url: https://www.linkedin.com/company/shieldlabs-ai
+- type: Authentication
+  url: authentication/shieldlabs-authentication.yml
+- type: Conventions
+  url: conventions/shieldlabs-conventions.yml
+- type: Idempotency
+  url: conventions/shieldlabs-conventions.yml
+- type: ErrorCatalog
+  url: errors/shieldlabs-problem-types.yml
+- type: RateLimits
+  url: rate-limits/shieldlabs-rate-limits.yml
+- type: Plans
+  url: plans/shieldlabs-plans-pricing.yml
+- type: Lifecycle
+  url: lifecycle/shieldlabs-lifecycle.yml
+- type: ChangeLog
+  url: changelog/shieldlabs-changelog.yml
+- type: ChangeLog
+  url: https://docs.shieldlabs.ai/changelog
+- type: Webhooks
+  url: asyncapi/shieldlabs-webhooks.yml
+- type: Sandbox
+  url: sandbox/shieldlabs-sandbox.yml
+- type: Components
+  url: components/shieldlabs-components.yml
+- type: Packages
+  url: packages/shieldlabs-packages.yml
+- type: SDKs
+  url: packages/shieldlabs-packages.yml
+- type: Conformance
+  url: conformance/shieldlabs-conformance.yml
+- type: Security
+  url: https://docs.shieldlabs.ai/security
+- type: VulnerabilityDisclosure
+  url: security/shieldlabs-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/shieldlabs-domain-security.yml
+- type: WellKnown
+  url: well-known/shieldlabs-well-known.yml
+- type: MCPServer
+  url: mcp/shieldlabs-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/shieldlabs-tool-crosswalk.yml
+- type: AgentCard
+  url: a2a/shieldlabs-a2a.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: LLMsTxt
+  url: llms/shieldlabs-llms.txt
+x-enrichment:
+  date: '2026-08-19'
+  status: enriched
+  artifacts_added: 31
+  pass: local-v1
+x-evidence:
+  round: '2026-08-19'
+  admitted_from: Add-API gate auto-publish, submission shieldlabs-b6a2bad8 at 16:05:29 UTC, confidence
+    90. A FIRST attempt 11 minutes earlier (shieldlabs-d19973c6, 15:54:05) carried the bare name with
+    no URL, so the gate had nothing to research and parked it at confidence 2. That record was dropped
+    as superseded, not as a rejection.
+  slug: No rename needed — shieldlabs.ai already yields shieldlabs under the domain rule.
+  host_health: shieldlabs.ai 200 / invented path 404. docs.shieldlabs.ai 200 / 404. api.shieldlabs.ai
+    404 on both, an API host with no root route. Checked with BOTH a default and a browser user-agent
+    and the bytes are identical — unlike two providers profiled earlier today, ShieldLabs filters nobody.
+  found_by_pipeline_not_by_my_probes: "My contract-discovery probes MISSED both of the following, and\
+    \ the enrichment pipeline found them. Recorded because the probe list is what was wrong, not the provider.\n\
+    \  OpenAPI  https://docs.shieldlabs.ai/references/openapi.yaml — 200 text/yaml 18,115b, valid OpenAPI\
+    \ 3.1.0, \"ShieldLabs API\" v1.2, 3 paths, servers account.shieldlabs.ai/api and api.shieldlabs.ai.\
+    \ I had probed /openapi.json and /openapi.yaml at the docs ROOT only.\n  MCP      https://docs.shieldlabs.ai/mcp\
+    \ with a descriptor at /.well-known/mcp.json. An anonymous tools/list returns real tools over SSE.\
+    \ I had probed /_mcp/server, the Mintlify path seen on another provider, and not /mcp."
+  mcp_scope_note: The MCP server is REAL and unauthenticated, and it is a DOCUMENTATION server emitted
+    by the Mintlify docs platform — not a ShieldLabs Server API server. Its tools search and read the
+    docs corpus; none call the History or Management API, none identify a visitor, none return a Risk
+    Score. An agent can learn how to integrate ShieldLabs through MCP but cannot transact with it. Recorded
+    so the MCPServer pointer is not read as a transactional agent surface.
+  two_llms_txt: Both shieldlabs.ai/llms.txt (9,660b) and docs.shieldlabs.ai/llms.txt (12,291b) are real
+    text/plain. The submission recorded only the apex one.

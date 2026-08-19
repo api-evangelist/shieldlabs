@@ -1,0 +1,82 @@
+generated: '2026-08-19'
+method: searched
+source: https://shieldlabs.ai/pricing
+docs: https://docs.shieldlabs.ai/billing
+note: >-
+  Public, self-serve pricing with no sales gate. Billing is per identification (one visitor check),
+  not per seat or per monthly active user. Both a monthly and a yearly rate are published; yearly
+  saves 20%. Two price sets appear across the provider's own surfaces: the pricing page slider shows
+  the yearly-billed monthly figure ($79 / $319 / $799 with the yearly per-identification rate) while
+  the feature-comparison table and the site llms.txt show the monthly-billed rate ($99 / $399 / $999
+  at $0.00396 / $0.00266 / $0.00199). Both are recorded below rather than picking one.
+currency: USD
+billing_unit: identification (one visitor check)
+plan_count: 4
+plans:
+- name: Free
+  price: 0
+  currency: USD
+  period: one-time
+  included_quota: 5000 identifications (one-time, not monthly)
+  overage: not available
+  credit_card_required: false
+  limits:
+    data_retention: 12 months
+    uptime_sla: null
+  features_note: Identical detection stack to the paid tiers, capped at 5,000 one-time identifications.
+- name: Starter
+  price_monthly_billed_monthly: 99
+  price_monthly_billed_yearly: 79
+  currency: USD
+  period: month
+  included_quota: 25000 identifications / month
+  rate_per_identification_monthly: 0.00396
+  rate_per_identification_yearly: 0.00317
+  overage: billed at the plan rate after the month closes
+  limits:
+    data_retention: 12 months
+    uptime_sla: null
+  yearly_saving: 238
+- name: Growth
+  price_monthly_billed_monthly: 399
+  price_monthly_billed_yearly: 319
+  currency: USD
+  period: month
+  included_quota: 150000 identifications / month
+  rate_per_identification_monthly: 0.00266
+  rate_per_identification_yearly: 0.00213
+  overage: billed at the plan rate after the month closes
+  limits:
+    data_retention: 12 months
+    uptime_sla: null
+  yearly_saving: 958
+  marketing_label: Most Popular
+- name: Scale
+  price_monthly_billed_monthly: 999
+  price_monthly_billed_yearly: 799
+  currency: USD
+  period: month
+  included_quota: 500000 identifications / month
+  rate_per_identification_monthly: 0.00199
+  rate_per_identification_yearly: 0.00159
+  overage: billed at the plan rate after the month closes
+  limits:
+    data_retention: 12 months
+    uptime_sla: 99.9%
+  yearly_saving: 2398
+custom:
+  threshold: above 500,000 identifications / month
+  process: contact support for a custom plan
+  note: The only contact-sales path; every published tier is self-serve.
+metering:
+  billable:
+  - Each visitor check from the snippet counts as one identification.
+  - >-
+    A Management API History lookup on api.shieldlabs.ai bills one request per returned record, with a
+    minimum of one — a zero-row lookup still bills one.
+  free:
+  - Webhook deliveries, including retries.
+  - Dashboard viewing.
+  - Data exports.
+  - Profile and setup calls.
+  - History API reads on account.shieldlabs.ai.

@@ -1,0 +1,120 @@
+generated: '2026-08-19'
+method: derived
+source: openapi/shieldlabs-server-api-openapi.yml
+docs: https://docs.shieldlabs.ai/api/models
+note: >-
+  Entity graph derived from the OpenAPI $ref links and the identifier fields. The domain has an
+  unusual shape for an API catalog entry: there are no CRUD resources and no writable objects. The
+  whole model is one immutable observation — a scored visit — plus the six identifiers it is indexed
+  by. The same observation is materialized in THREE different shapes depending on where it is read
+  from, and the shapes do not share field names or casing.
+entities:
+- name: Snapshot (observation)
+  description: One scored visit. Immutable, created by the snippet, never written by a client.
+  materializations:
+  - name: AccountSnapshot
+    surface: History API (account.shieldlabs.ai)
+    casing: snake_case
+    key_fields: [request_id, session_id, cookie_id, device_id, visitor_id, ip, score, score_details, created_at]
+    note: score_details is a JSON STRING that must be parsed again, not a nested array
+  - name: Snapshot
+    surface: Management API (api.shieldlabs.ai)
+    casing: PascalCase
+    key_fields: [RequestID, SessionID, CookieID, DeviceID, VisitorID, IP, ConnectionType, WebRtcHIP, OS, Browser, DeviceType, Country, UserHID, Score, Details, LastRequestTime]
+    note: Details is a real array of ScoreDetail {Value, Description}
+  - name: WebhookScoredData
+    surface: outbound webhook
+    casing: snake_case
+    key_fields: [request_id, visitor_id, device_id, session_id, cookie_id, user_hid, domain, public_ip, local_ip, connection_type, os, browser, device_type, traffic_source, risk_score, signals, detection_flags, observed_at]
+    note: the richest of the three — the only one carrying detection_flags, traffic_source and separate public/local IP
+- name: Profile
+  description: Domain account state — remaining request balance and masked keys.
+  fields: [Domain, Weight, PublicKey, Secret, CreatedAt]
+  surface: Management API
+- name: WebhookEvent
+  description: Signed delivery envelope.
+  fields: [event_type, schema_version, created_at, data]
+  event_types: [identification.scored, webhook.ping]
+- name: WebhookSignal
+  description: One scoring signal that fired, with the points it contributed.
+  fields: [name, weight]
+  note: debug entries with weight 0 are omitted from the array
+- name: WebhookDetectionFlags
+  description: Denormalized detection booleans.
+  field_count: 18
+  fields: [vpn, privacy_relay, browser_vpn_proxy, tor, proxy, datacenter_ip, abuser, os_mismatch, os_not_detected, timezone_mismatch, anti_detect_browser, browser_automation, ip_mismatch, incognito, search_bot, suspicious_paid_click, javascript_disabled, stun_not_checked]
+  note: >-
+    The provider's own OpenAPI repo carries a 19th flag, stun_request_seen, that the docs-hosted copy
+    of the spec omits — the only substantive difference between the two published copies.
+- name: WebhookTrafficSource
+  description: Acquisition attribution for the visit.
+  fields: [channel, referrer_domain, landing_url, click_id_type, utm_source, utm_medium, utm_campaign, utm_content, utm_term]
+- name: WebhookIPAddress
+  fields: [ip, country]
+identifiers:
+- id: request_id
+  cardinality: one per visit
+  durability: single observation
+  role: primary key of a snapshot; the join key across webhook and History; the published idempotency key
+- id: device_id
+  durability: durable — derived from the browser environment, not stored, survives cleared cookies
+  role: the durable identity most abuse rules key on
+- id: visitor_id
+  durability: durable
+  role: fingerprint-derived visitor identity
+- id: session_id
+  durability: session-scoped, client-side, breaks on storage clear
+- id: cookie_id
+  durability: cookie-scoped, client-side, breaks on storage clear
+- id: user_hid
+  durability: caller-supplied
+  role: the customer's own hashed account id, echoed back; must be hashed before it is passed
+relationships:
+- from: WebhookEvent
+  to: WebhookScoredData
+  type: has_one
+  via: data
+  note: absent on webhook.ping
+- from: WebhookScoredData
+  to: WebhookSignal
+  type: has_many
+  via: signals
+- from: WebhookScoredData
+  to: WebhookDetectionFlags
+  type: has_one
+  via: detection_flags
+- from: WebhookScoredData
+  to: WebhookTrafficSource
+  type: has_one
+  via: traffic_source
+- from: WebhookScoredData
+  to: WebhookIPAddress
+  type: has_one
+  via: public_ip
+- from: WebhookScoredData
+  to: WebhookIPAddress
+  type: has_one
+  via: local_ip
+- from: HistoryEnvelope
+  to: AccountSnapshot
+  type: has_many
+  via: data
+- from: Snapshot
+  to: ScoreDetail
+  type: has_many
+  via: Details
+- from: AccountSnapshot
+  to: Snapshot
+  type: same_entity_different_surface
+  via: request_id
+  note: same observation, different host, different casing, different signal representation
+scoring:
+  field: risk_score / Score
+  range: 0-100
+  bands:
+    clean: 0-9
+    low: 10-29
+    medium: 30-59
+    high: 60-100
+  sentinel: 999 (rate-limit ban marker, not a score — guard for > 100)
+  explainability: every point is attributable to a named signal and its weight

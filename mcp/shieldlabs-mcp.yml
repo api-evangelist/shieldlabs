@@ -1,0 +1,61 @@
+generated: '2026-08-19'
+method: searched
+status: published
+source: https://docs.shieldlabs.ai/.well-known/mcp.json
+note: >-
+  ShieldLabs publishes an MCP server descriptor at /.well-known/mcp.json on its documentation host and
+  serves a live, unauthenticated MCP endpoint at https://docs.shieldlabs.ai/mcp. tools/list was called
+  anonymously and returned three real tools with full inputSchemas (saved verbatim to
+  shieldlabs-mcp-tools-list.json). IMPORTANT SCOPE NOTE: this is a DOCUMENTATION MCP server emitted by
+  the Mintlify docs platform, not a ShieldLabs Server API server. Its tools search and read the docs
+  corpus; none of them call the History or Management API, and no tool identifies a visitor or returns
+  a Risk Score. An agent can learn how to integrate ShieldLabs through MCP but cannot transact with it.
+deployment:
+  mode: remote
+  endpoint: https://docs.shieldlabs.ai/mcp
+  auth: none
+  verified: probed
+server:
+  name: shieldlabs
+  transport: http
+  url: https://docs.shieldlabs.ai/mcp
+  alternate_url: https://shieldlabs-725d18f1.main-kill-isr.mintlify.me/mcp
+  descriptor: https://docs.shieldlabs.ai/.well-known/mcp.json
+  platform: Mintlify docs MCP
+  scope: documentation
+  authentication: none
+tools:
+- name: search_shield_labs
+  title: Search documentation
+  description: >-
+    Search across the ShieldLabs knowledge base to find relevant information, code examples, API
+    references, and guides.
+  input_schema:
+    query: string (required)
+  annotations:
+    read_only: true
+    destructive: false
+    idempotent: true
+- name: query_docs_filesystem_shield_labs
+  description: >-
+    Read-only shell-like query against a virtualized in-memory filesystem containing only the
+    ShieldLabs documentation pages and OpenAPI specs. Supports rg, grep, find, tree, ls, cat, head,
+    tail, stat, wc, sort, uniq, cut, sed, awk, jq. Stateless per call; no writes, no network.
+  input_schema:
+    command: string (required)
+- name: submit_feedback
+  title: Submit documentation feedback
+  description: Submit feedback about a documentation page.
+  input_schema:
+    path: string
+    feedback: string
+x-evidence:
+  probed: '2026-08-19'
+  descriptor_url: https://docs.shieldlabs.ai/.well-known/mcp.json
+  descriptor_status: 200
+  tools_list_url: https://docs.shieldlabs.ai/mcp
+  tools_list_status: 200
+  tools_list_method: 'POST {"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+  tools_returned: 3
+  auth_required: false
+  raw: shieldlabs-mcp-tools-list.json

@@ -1,0 +1,78 @@
+generated: '2026-08-19'
+method: searched
+source: https://docs.shieldlabs.ai/changelog
+derived_from: openapi/shieldlabs-server-api-openapi.yml
+note: >-
+  ShieldLabs versions its paths (v1) and its event payloads (a dated schema_version), and it keeps a
+  dated changelog. What it does NOT publish is the operational scaffolding around change: there is no
+  status page on any probed host, no formal deprecation policy page, no Sunset/Deprecation header
+  support documented, and no SLA document — the only availability commitment anywhere is a "99.9%
+  SLA" line item on the Scale tier of the pricing table, with no terms behind it.
+versioning:
+  scheme: uri-path
+  current: v1
+  spec_version: '1.2'
+  docs: https://docs.shieldlabs.ai/api/overview
+  paths:
+  - /api/v1/history/{search_type}/{value}
+  - /v1/profile
+  - /v1/history/{type}/{value}
+event_versioning:
+  scheme: date
+  field: schema_version
+  current: '2026-06-01'
+  sent_on: every webhook envelope, including webhook.ping
+  docs: https://docs.shieldlabs.ai/api/webhooks
+deprecation:
+  policy_url: null
+  sunset_header: false
+  deprecation_header: false
+  formal_policy: false
+  observed_deprecations:
+  - subject: Management API History path (/v1/history/{type}/{value} on api.shieldlabs.ai)
+    status: soft-deprecated
+    statement: >-
+      "Prefer /api/v1/history/… on account.shieldlabs.ai for new integrations." Stated in the
+      OpenAPI operation description; the path remains live and is not scheduled for removal.
+    source: openapi/shieldlabs-server-api-openapi.yml#searchHistoryV1
+  - subject: Management API legacy path authentication
+    status: deprecated with a dated sunset
+    sunset_date: '2027-01-01'
+    statement: >-
+      "legacy path auth deprecated (sunset 2027-01-01)" — published in the README of the provider's
+      own public OpenAPI repository. This is the only dated sunset commitment ShieldLabs publishes,
+      and it does not appear in the docs site or in the spec itself.
+    source: https://github.com/ShieldLabs-ai/shieldlabs-openapi
+sla:
+  url: null
+  uptime_target: 99.9%
+  scope: Scale tier only
+  source: https://shieldlabs.ai/pricing
+  note: >-
+    Listed as a plan feature in the pricing comparison table. No SLA document, credit schedule or
+    measurement definition is published, and no uptime commitment is offered on Free, Starter or
+    Growth.
+status_page: null
+status_page_probes:
+- url: https://status.shieldlabs.ai
+  status: 000
+  note: DNS does not resolve.
+- url: https://shieldlabs.ai/status
+  status: 404
+- url: https://docs.shieldlabs.ai/status
+  status: 404
+- url: https://shieldlabs.statuspage.io
+  status: 200
+  note: >-
+    FALSE POSITIVE, recorded so a later run does not re-credit it — the subdomain is unclaimed and
+    Atlassian serves its own Statuspage marketing page there (title "Real-Time Incident Communication
+    with Statuspage | Atlassian"). /api/v2/summary.json redirects to www.statuspage.io. This is not a
+    ShieldLabs status page.
+data_retention:
+  identification_records: up to 12 months
+  scope: all plans including Free
+  customer_controls: [export, earlier deletion on request]
+  residency: single region, no per-customer region selection
+  source: https://docs.shieldlabs.ai/privacy
+deprecated_operations: []
+changelog: https://docs.shieldlabs.ai/changelog

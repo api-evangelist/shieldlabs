@@ -1,0 +1,110 @@
+generated: '2026-08-19'
+method: searched
+source: https://docs.shieldlabs.ai/api/overview
+derived_from: openapi/shieldlabs-server-api-openapi.yml
+docs:
+  api_overview: https://docs.shieldlabs.ai/api/overview
+  server_api: https://docs.shieldlabs.ai/api/server-api
+  webhooks: https://docs.shieldlabs.ai/setup/webhooks
+  keys: https://docs.shieldlabs.ai/setup/keys
+  errors: https://docs.shieldlabs.ai/errors
+  rate_limits: https://docs.shieldlabs.ai/rate-limits
+note: >-
+  ShieldLabs runs two Server API surfaces implemented by two different internal services, and their
+  conventions DIVERGE at almost every level — casing, envelope, auth headers, billing and rate
+  limiting are all different between account.shieldlabs.ai and api.shieldlabs.ai. Anything cross-
+  cutting stated here is stated per surface for that reason.
+authentication:
+  style: bearer token, per registered domain
+  surfaces:
+  - host: account.shieldlabs.ai
+    header: 'Authorization: Bearer sec_…'
+    credential: Private API Key
+  - host: api.shieldlabs.ai
+    header: 'Authorization: Bearer <secret> + X-Shield-Domain: <domain>'
+    credential: Secret Key
+  cross_reference: authentication/shieldlabs-authentication.yml
+idempotency:
+  supported: true
+  mechanism: consumer-side deduplication key on the event, not a request header
+  key_field: request_id
+  scope: one identification (one visitor check)
+  header: null
+  detail: >-
+    ShieldLabs publishes a real idempotency contract, but it runs in the opposite direction from the
+    usual one. Webhook delivery is explicitly AT-MOST-ONCE with NO RETRIES, and the provider requires
+    the consumer to treat data.request_id as the idempotency key and make handlers idempotent on it —
+    the OpenAPI webhook description states this verbatim ("Treat `data.request_id` as an idempotency
+    key"), as does the changelog. request_id is documented as unique per visit and is the join key
+    between the webhook payload and a History API read.
+    There is NO Idempotency-Key request header on the Server API, because both operations are GETs and
+    therefore naturally idempotent; there are no write operations on the public API at all.
+  evidence:
+  - openapi/shieldlabs-server-api-openapi.yml#identificationScored
+  - https://docs.shieldlabs.ai/setup/webhooks
+  - https://docs.shieldlabs.ai/changelog
+pagination:
+  surfaces:
+  - host: account.shieldlabs.ai
+    style: limit/offset
+    params:
+      limit: {default: 20, min: 1, max: 100}
+      offset: {default: 0, min: 0}
+    response_fields: [data, total]
+    envelope: '{ "data": [...], "total": n }'
+  - host: api.shieldlabs.ai
+    style: limit only
+    params:
+      limit: {default: 100, min: 1, max: 100}
+    response_fields: []
+    envelope: bare JSON array, no total, no cursor
+  ordering: newest first on both surfaces
+field_casing:
+  account_shieldlabs_ai: snake_case (request_id, device_id, created_at)
+  api_shieldlabs_ai: PascalCase (RequestID, DeviceID, LastRequestTime)
+  webhook: snake_case
+  note: >-
+    The same logical snapshot is returned in two different casings depending on which host you read it
+    from. A client cannot share a model between the two surfaces without a mapping layer.
+expansion:
+  supported: false
+sparse_fields:
+  supported: false
+metadata:
+  supported: partial
+  detail: >-
+    A single caller-supplied field, user_hid, is echoed back on webhooks and History rows. The docs
+    require it to be hashed or pseudonymous before it is passed. There is no general metadata bag.
+request_tracing:
+  request_id_header: null
+  correlation_field: request_id
+  detail: >-
+    request_id is the correlation key across the snippet call, the webhook delivery and the History
+    read, but it is a payload field — no request-id response header is documented on any surface.
+versioning:
+  api_version_scheme: uri-path
+  current: v1
+  spec_version: '1.2'
+  event_schema_version: '2026-06-01'
+  detail: >-
+    Paths are versioned (/api/v1/…, /v1/…). Webhook payloads carry a separate date-based
+    schema_version field, currently 2026-06-01, sent on every envelope.
+  cross_reference: lifecycle/shieldlabs-lifecycle.yml
+error_envelope:
+  uniform: false
+  guidance: branch on HTTP status, not on a body field
+  cross_reference: errors/shieldlabs-problem-types.yml
+rate_limit_signalling:
+  headers: []
+  status_codes: [429, 503]
+  cross_reference: rate-limits/shieldlabs-rate-limits.yml
+webhook_conventions:
+  signature_header: 'X-Shield-Signature: sha256=<hex>'
+  algorithm: HMAC-SHA256 over the raw request body
+  key: per-endpoint whsec_… secret
+  comparison: constant-time; reject with 401 on mismatch
+  delivery: at-most-once, no retries
+  delay: waits up to 60s for an optional follow-up network check, then always delivers
+  event_types: [identification.scored, webhook.ping]
+  ack: return 200 quickly
+  cross_reference: asyncapi/shieldlabs-webhooks.yml

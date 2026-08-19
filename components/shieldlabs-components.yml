@@ -1,0 +1,55 @@
+generated: '2026-08-19'
+method: searched
+source: https://docs.shieldlabs.ai/setup/snippet
+note: >-
+  The entire ShieldLabs product enters a customer's application through one client-side artifact — an
+  ES module loaded from the CDN — so the browser surface is not a nice-to-have here, it is the primary
+  integration. Framework bindings exist as first-party source on GitHub but none are published to a
+  registry (see packages/shieldlabs-packages.yml), which means the copy-paste snippet is in practice
+  the only installable component. There are no hosted UI widgets, embedded dashboards or prebuilt
+  drop-in elements — the dashboard is a separate app at app.shieldlabs.ai and is not embeddable.
+families:
+- name: Collection agent (snippet)
+  type: browser ES module
+  loader: https://cdn.shieldlabs.ai/snippet.js?publicKey=YOUR_PUBLIC_KEY
+  development_loader: https://dev.cdn.shieldlabs.ai/snippet.js?publicKey=YOUR_PUBLIC_KEY
+  install: dynamic import in a <script type="module"> block
+  versioning: unpinned — the URL carries no version and floats to the current build
+  requirements:
+  - secure context (HTTPS); uses crypto.subtle for AES-256-GCM payload wrapping
+  - CSP script-src must allow the snippet host and cdn.jsdelivr.net
+  - CSP connect-src must allow rest.shieldlabs.ai, webrtc.shieldlabs.ai and stun:ice.shieldlabs.ai:3478
+  exports:
+  - name: checkAnonymous
+    description: Identify an anonymous visitor.
+  - name: checkAuthenticatedUser
+    description: Identify a visitor with a caller-supplied hashed UserHID.
+  - name: forceCheckAnonymous
+    description: Bypass the session throttle for an anonymous check at a meaningful moment.
+  - name: forceCheckAuthenticatedUser
+    description: Bypass the session throttle for an authenticated check.
+  throttling: one identify per visit within a session window, managed by the snippet itself
+- name: Framework bindings
+  type: source-available npm packages, unpublished
+  members:
+  - name: "@shieldlabs/js"
+    repo: https://github.com/ShieldLabs-ai/shieldlabs-js
+    description: Lightweight browser loader wrapping the CDN agent.
+  - name: "@shieldlabs/react"
+    repo: https://github.com/ShieldLabs-ai/shieldlabs-react
+    description: React bindings for the browser loader.
+  - name: "@shieldlabs/vue"
+    repo: https://github.com/ShieldLabs-ai/shieldlabs-vue
+    description: Vue bindings for the browser loader.
+  - name: "@shieldlabs/next"
+    repo: https://github.com/ShieldLabs-ai/shieldlabs-next
+    description: Next.js integration for the browser loader.
+  installable: false
+  installable_note: not published to npm; a consumer must vendor the source
+hosted_ui: []
+hosted_ui_note: >-
+  No embeddable widgets, hosted checkout-style surfaces or embedded dashboards. app.shieldlabs.ai is a
+  standalone dashboard for domains, keys, webhooks, Patterns and traffic analytics.
+docs_examples:
+  frameworks_covered: [Native JS, React, Angular, Vue, Preact, Svelte, WordPress, Tilda, Shopify]
+  source: https://docs.shieldlabs.ai/setup/snippet

@@ -1,0 +1,64 @@
+generated: '2026-08-19'
+method: searched
+source: https://docs.shieldlabs.ai/rate-limits
+docs: https://docs.shieldlabs.ai/rate-limits
+note: >-
+  ShieldLabs publishes explicit numeric limits on a dedicated page. It ships NO rate-limit response
+  headers — there is no X-RateLimit-*, no RateLimit-*, and no Retry-After documented anywhere, so an
+  agent gets no runtime budget signal and must infer state from the status code alone. Worse, the ban
+  is stateful and invisible: crossing the per-IP limit bans the IP for one hour with no header saying
+  when it clears. The single most dangerous detail for an integrator is the 999 sentinel — a banned
+  request is written to history with a score of 999 (uncapped, outside the documented 0-100 Risk Score
+  range) and that row can arrive on a webhook or a History read, so a naive handler reads a gateway
+  ban as a maximum-risk visitor.
+limit_count: 3
+limits:
+- name: Per-IP rate limit
+  scope: source IP
+  window: 1 minute
+  limit: 20
+  burst: null
+  applies_to:
+  - https://rest.shieldlabs.ai (snippet ingest gateway)
+  - https://api.shieldlabs.ai (Management API)
+  status_on_exhaustion: 429
+  response_body: '{"error":"too many requests"}'
+  penalty: The source IP is banned for 1 hour; further requests continue to return 429.
+  reset: automatic after the ban window; no manual unban, nothing to configure
+  headers: []
+- name: Concurrency cap
+  scope: whole gateway, in-flight connections
+  window: instantaneous
+  limit: 512
+  applies_to:
+  - https://rest.shieldlabs.ai
+  - https://api.shieldlabs.ai
+  status_on_exhaustion: 503
+  response_body: '{"error":"server is busy"}'
+  guidance: transient back-pressure; retry with a short jittered backoff
+  headers: []
+- name: Request body size
+  scope: per request
+  limit: 512 KB
+  applies_to:
+  - https://rest.shieldlabs.ai
+  status_on_exhaustion: request rejected before scoring
+  headers: []
+not_rate_limited:
+- surface: https://account.shieldlabs.ai (History API)
+  note: Explicitly documented as not subject to the gateway limits.
+response_headers:
+  ratelimit_headers_published: false
+  retry_after: false
+  note: >-
+    No rate-limit signalling headers are documented on any surface. Clients must branch on the HTTP
+    status code.
+adjacent_status_codes:
+- status: 402
+  meaning: Domain request balance exhausted — a billing condition, not a rate limit.
+sentinel:
+  value: 999
+  field: data.risk_score (webhook) / Score (History API)
+  meaning: >-
+    Rate-limit ban marker written to the snapshot for a banned request. Not capped to 100. Guard for
+    score > 100 at the top of any handler before reading the risk band.

@@ -1,0 +1,66 @@
+generated: '2026-08-19'
+method: searched
+source: openapi/shieldlabs-server-api-openapi.yml
+docs: https://docs.shieldlabs.ai/setup/keys
+note: >-
+  Derived from the provider's OpenAPI securitySchemes, then upgraded from the published keys reference.
+  ShieldLabs issues four distinct credentials per registered domain; only two of them appear in the
+  OpenAPI (the two Server API bearer schemes). The public key and the per-endpoint webhook signing
+  secret are documented but are not OpenAPI security schemes, so they are recorded separately below.
+summary:
+  types:
+  - http
+  api_key_in: []
+  oauth2_flows: []
+  scheme_count: 2
+  oauth2: false
+  openid_connect: false
+  mutual_tls: false
+schemes:
+- name: PrivateApiKey
+  type: http
+  scheme: bearer
+  description: >-
+    Private API Key from the dashboard API tab, format `sec_xxx-xxx-xxx`. Sent as
+    `Authorization: Bearer sec_…` to the History API on account.shieldlabs.ai. Free reads —
+    does not consume request balance.
+  applies_to: https://account.shieldlabs.ai/api
+  sources:
+  - openapi/shieldlabs-server-api-openapi.yml
+- name: SecretKeyHeader
+  type: http
+  scheme: bearer
+  description: >-
+    Secret Key (32-char hex) sent as `Authorization: Bearer` together with an `X-Shield-Domain`
+    header naming the registered domain. Authenticates the Management API on api.shieldlabs.ai
+    (profile, balance, billed History path).
+  additional_headers:
+  - name: X-Shield-Domain
+    required: true
+    description: The registered domain the credential is scoped to.
+  applies_to: https://api.shieldlabs.ai
+  sources:
+  - openapi/shieldlabs-server-api-openapi.yml
+non_api_credentials:
+- name: Public Key
+  format: 32-char hex
+  transport: query parameter `?publicKey=` on the cdn.shieldlabs.ai snippet URL
+  browser_safe: true
+  description: >-
+    Identifies the domain to the ingest gateway. Accepted only when it matches the domain the page
+    is served from (resolved from Origin, Referer or Host), so a lifted key will not work elsewhere.
+  docs: https://docs.shieldlabs.ai/setup/keys
+- name: Webhook signing secret
+  format: whsec_…
+  scope: per registered webhook endpoint
+  browser_safe: false
+  description: >-
+    HMAC-SHA256 key used to verify the `X-Shield-Signature: sha256=<hex>` header over the raw
+    webhook body. Not the Secret Key — a separate secret per endpoint.
+  docs: https://docs.shieldlabs.ai/setup/webhooks
+key_scoping:
+  per_domain: true
+  rotation: >-
+    Key sets rotate from the dashboard; rotation issues a fresh public key and secret key, shows the
+    new secret in full once, and invalidates the old set immediately.
+  masking: keys are masked in the dashboard after issue
