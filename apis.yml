@@ -1,0 +1,60 @@
+name: ShieldLabs
+description: >-
+  Anonymous visitor identification and fraud-prevention platform. A browser JS snippet collects 100+ signals and returns
+  a persistent visitor/device ID plus an explainable 0-100 risk score; the customer's own code makes the
+  allow/challenge/block decision. Offers server-side REST APIs (History and Management), outbound webhooks, and
+  agent-readable llms.txt documentation.
+url: https://shieldlabs.apievangelist.com/apis.yml
+created: '2026-08-19'
+modified: '2026-08-19'
+specificationVersion: '0.21'
+tags:
+  - fraud-detection
+  - abuse-prevention
+  - visitor-identification
+  - device-fingerprinting
+  - bot-detection
+  - vpn-proxy-detection
+  - risk-scoring
+  - identity
+  - security
+apis:
+  - name: ShieldLabs Server API
+    description: >-
+      Server-side REST APIs: History API (base https://account.shieldlabs.ai/api, Bearer sec_ key) for reads that do not
+      consume paid requests, and Management API (base https://api.shieldlabs.ai, Bearer secret + X-Shield-Domain) for
+      domain profile, balance, and per-row-billed history. Also outbound webhooks pushing score/signals. Documented
+      narratively with curl examples; no machine-readable OpenAPI/AsyncAPI/GraphQL/Postman contract found publicly.
+    humanURL: https://docs.shieldlabs.ai/api/overview
+    baseURL: https://api.shieldlabs.ai
+    tags:
+      - fraud-detection
+      - abuse-prevention
+      - visitor-identification
+      - device-fingerprinting
+      - bot-detection
+      - vpn-proxy-detection
+      - risk-scoring
+      - identity
+      - security
+    properties:
+      - type: Documentation
+        url: https://docs.shieldlabs.ai/api/overview
+      - type: Documentation
+        url: https://docs.shieldlabs.ai/api/server-api
+      - type: Documentation
+        url: https://docs.shieldlabs.ai/api/webhooks
+      - type: LLMsTxt
+        url: https://shieldlabs.ai/llms.txt
+      - type: LLMsTxt
+        url: https://docs.shieldlabs.ai/llms.txt
+      - type: LLMsTxt
+        url: https://docs.shieldlabs.ai/llms-full.txt
+maintainers:
+  - FN: ShieldLabs
+    url: https://shieldlabs.ai
+generated:
+  by: apis.io/add
+  model: claude-opus-4-8
+  confidence: 90
+  at: '2026-08-19T16:02:26.724Z'
