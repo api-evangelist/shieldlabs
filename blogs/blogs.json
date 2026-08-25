@@ -1,0 +1,21 @@
+{
+  "repo": "shieldlabs",
+  "feeds": [
+    {
+      "source": "https://docs.shieldlabs.ai/support",
+      "feed_url": "https://docs.shieldlabs.ai/support",
+      "title": "",
+      "saved": 0,
+      "method": "none"
+    },
+    {
+      "source": "https://shieldlabs.ai/blog",
+      "feed_url": "https://shieldlabs.ai/rss.xml",
+      "title": "",
+      "saved": 2,
+      "method": "discovered"
+    }
+  ],
+  "post_count": 2,
+  "fetched": "2026-08-22T20:20:02Z"
+}
