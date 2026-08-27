@@ -44,51 +44,86 @@ tags_raw:
 - anti-fraud
 - traffic-quality
 apis:
-- name: ShieldLabs Server API
-  description: 'Server-side REST API described by a public OpenAPI 3.1 specification (three operations
-    plus one OpenAPI-3.1 webhook). Two hosts, implemented by two different internal services and diverging
-    in casing, envelope, auth headers, billing and rate limiting: the History API on https://account.shieldlabs.ai/api
-    (Private API Key, `Authorization: Bearer sec_…`, snake_case, `{data,total}` envelope with limit/offset,
-    free — does not consume request balance) and the Management API on https://api.shieldlabs.ai (Secret
-    Key plus an `X-Shield-Domain` header, PascalCase bare arrays, bills one request per returned row with
-    a minimum of one). The primary delivery path is outbound: a signed identification.scored webhook carrying
-    the Risk Score, the weighted signals, 18 detection flags and traffic-source attribution, delivered
-    at most once with no retries and recovered through a free History read on request_id.'
+- aid: shieldlabs:shieldlabs-history-api-api
+  name: ShieldLabs History API
+  description: >-
+    Recommended snapshot reads on account.shieldlabs.ai (service: Shield.Portal.Admin).
+
+    Authenticated with Private API Key. Response envelope `{ data, total }`.
   humanURL: https://docs.shieldlabs.ai/api/overview
   baseURL: https://api.shieldlabs.ai
   tags:
-  - Fraud Detection
-  - Abuse Prevention
-  - Visitor Identification
-  - Device Fingerprinting
-  - Bot Detection
-  - vpn-proxy-detection
-  - Risk Scoring
-  - Identity
-  - Security
-  - Webhook
-  tags_raw:
-  - fraud-detection
-  - abuse-prevention
-  - visitor-identification
-  - device-fingerprinting
-  - bot-detection
-  - vpn-proxy-detection
-  - risk-scoring
-  - identity
-  - security
-  - webhooks
+  - history-api
   properties:
   - type: OpenAPI
-    url: openapi/shieldlabs-server-api-openapi.yml
-  - type: OpenAPI
-    url: https://docs.shieldlabs.ai/references/openapi.yaml
+    url: openapi/shieldlabs-history-api-api-openapi.yml
   - type: JSONSchema
     url: json-schema/shieldlabs-identification-scored.schema.json
   - type: Examples
     url: examples/shieldlabs-identification-scored-example.json
-  - type: Overlay
-    url: overlays/shieldlabs-server-api-overlay.yaml
+  - type: Documentation
+    url: https://docs.shieldlabs.ai/api/overview
+  - type: Documentation
+    url: https://docs.shieldlabs.ai/api/server-api
+  - type: Documentation
+    url: https://docs.shieldlabs.ai/api/webhooks
+  - type: APIReference
+    url: https://docs.shieldlabs.ai/api/server-api
+  - type: DataModel
+    url: data-model/shieldlabs-data-model.yml
+  - type: ToolCrosswalk
+    url: mcp/shieldlabs-tool-crosswalk.yml
+  - type: LLMsTxt
+    url: https://shieldlabs.ai/llms.txt
+  - type: LLMsTxt
+    url: https://docs.shieldlabs.ai/llms.txt
+- aid: shieldlabs:shieldlabs-management-api-api
+  name: ShieldLabs Management API
+  description: >-
+    Profile, balance, and alternate History on api.shieldlabs.ai (service: Shield.Core).
+
+    Authenticated with Secret Key headers. History returns a PascalCase JSON array.
+  humanURL: https://docs.shieldlabs.ai/api/overview
+  baseURL: https://api.shieldlabs.ai
+  tags:
+  - management-api
+  properties:
+  - type: OpenAPI
+    url: openapi/shieldlabs-management-api-api-openapi.yml
+  - type: JSONSchema
+    url: json-schema/shieldlabs-identification-scored.schema.json
+  - type: Examples
+    url: examples/shieldlabs-identification-scored-example.json
+  - type: Documentation
+    url: https://docs.shieldlabs.ai/api/overview
+  - type: Documentation
+    url: https://docs.shieldlabs.ai/api/server-api
+  - type: Documentation
+    url: https://docs.shieldlabs.ai/api/webhooks
+  - type: APIReference
+    url: https://docs.shieldlabs.ai/api/server-api
+  - type: DataModel
+    url: data-model/shieldlabs-data-model.yml
+  - type: ToolCrosswalk
+    url: mcp/shieldlabs-tool-crosswalk.yml
+  - type: LLMsTxt
+    url: https://shieldlabs.ai/llms.txt
+  - type: LLMsTxt
+    url: https://docs.shieldlabs.ai/llms.txt
+- aid: shieldlabs:shieldlabs-shieldlabs-api-api
+  name: ShieldLabs ShieldLabs API
+  description: The ShieldLabs API API from ShieldLabs — 0 operation(s) for shieldlabs api.
+  humanURL: https://docs.shieldlabs.ai/api/overview
+  baseURL: https://api.shieldlabs.ai
+  tags:
+  - ShieldLabs API
+  properties:
+  - type: OpenAPI
+    url: openapi/shieldlabs-shieldlabs-api-api-openapi.yml
+  - type: JSONSchema
+    url: json-schema/shieldlabs-identification-scored.schema.json
+  - type: Examples
+    url: examples/shieldlabs-identification-scored-example.json
   - type: Documentation
     url: https://docs.shieldlabs.ai/api/overview
   - type: Documentation
@@ -115,6 +150,8 @@ generated:
   confidence: 90
   at: '2026-08-19T16:02:26.724Z'
 common:
+- type: Overlay
+  url: overlays/shieldlabs-server-api-overlay.yaml
 - type: DeveloperPortal
   url: https://docs.shieldlabs.ai/
 - type: Documentation
