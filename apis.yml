@@ -12,6 +12,19 @@ description: 'Anonymous visitor identification and fraud-prevention platform. A 
   API on api.shieldlabs.ai — described by a public OpenAPI 3.1 specification the company maintains in
   its own MIT-licensed GitHub repo. Self-serve and per-identification priced, with a 5,000-identification
   free tier and no sales gate.'
+deliveryModel:
+  model: unknown
+  open_source: unknown
+  commercial: true
+  callable_host: true
+  label: Delivery model not determined — needs a product licence on record
+  confidence: low
+  source:
+  - openapi
+  - pricing
+  - repository-unlicensed
+  generated: '2026-08-28'
+  method: derived
 image: https://shieldlabs.ai/og/home.png
 url: https://shieldlabs.apievangelist.com/apis.yml
 created: '2026-08-19'
