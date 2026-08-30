@@ -1,0 +1,139 @@
+openapi: 3.2.0
+info:
+  title: ShieldLabs History API
+  version: '1.2'
+  description: "The ShieldLabs API surfaces visitor identification, anonymity detection, and\nabuse and fraud prevention for your application.\n\nThere are three surfaces:\n\n- The **JS snippet** posts collected signals to `rest.shieldlabs.ai` automatically.\n  You do not call this endpoint yourself. See [Install the snippet](/setup/snippet).\n- **Webhooks** deliver the Risk Score and signals to your server shortly after a\n  visit. See [Webhooks](/api/webhooks). Contract: schema_version `2026-06-01`\n  (`identification.scored` / `webhook.ping`), signature in `X-Shield-Signature`.\n- The **Server API** has two backend hosts:\n  - **History API** (recommended) on `account.shieldlabs.ai/api` — implemented by\n    **Shield.Portal.Admin**. Private API Key (`Authorization: Bearer sec_…`).\n    Envelope `{ data, total }`. See [Server API](/api/server-api).\n  - **Management API** on `api.shieldlabs.ai` — implemented by **Shield.Core**.\n    Secret Key in headers (`X-Shield-Domain` + `Authorization: Bearer`).\n    Profile, balance, and alternate billed History path (PascalCase array).\n\nThe Risk Score is an integer from 0 to 100. ShieldLabs scores visits; your own\ncode decides whether to allow, challenge, review, or block.\n"
+  contact:
+    email: support@shieldlabs.ai
+servers:
+- url: https://account.shieldlabs.ai/api
+  description: History API (Shield.Portal.Admin — Private API Key, recommended for snapshot reads)
+- url: https://api.shieldlabs.ai
+  description: Management API (Shield.Core — Secret Key — profile, balance, billed History)
+tags:
+- name: history-api
+  description: 'Recommended snapshot reads on account.shieldlabs.ai (service: Shield.Portal.Admin).
+
+    Authenticated with Private API Key. Response envelope `{ data, total }`.
+
+    '
+paths:
+  /api/v1/history/{search_type}/{value}:
+    get:
+      tags:
+      - history-api
+      summary: Search history by identifier (recommended)
+      description: 'Returns stored snapshots that match an identifier, newest first, in a paginated
+
+        `{ data, total }` envelope. Does not consume request balance.
+
+        Served by Shield.Portal.Admin on account.shieldlabs.ai.
+
+        '
+      operationId: searchHistoryAccount
+      security:
+      - PrivateApiKey: []
+      parameters:
+      - name: search_type
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - ip
+          - user_hid
+          - visitor_id
+          - request_id
+          - device_id
+          - session_id
+          - cookie_id
+      - name: value
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 20
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+      responses:
+        '200':
+          description: Paginated snapshot list
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HistoryEnvelope'
+        '401':
+          $ref: '#/components/responses/UnauthorizedJson'
+components:
+  schemas:
+    HistoryEnvelope:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AccountSnapshot'
+        total:
+          type: integer
+    AccountSnapshot:
+      type: object
+      description: Snapshot row from the History API (snake_case).
+      properties:
+        request_id:
+          type: string
+          format: uuid
+        session_id:
+          type: string
+          format: uuid
+        cookie_id:
+          type: string
+          format: uuid
+        device_id:
+          type: string
+          format: uuid
+        visitor_id:
+          type: string
+          format: uuid
+        ip:
+          type: string
+        score:
+          type: integer
+        score_details:
+          type: string
+          description: JSON string of signal objects with Value and Description fields.
+        created_at:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          examples:
+          - too many requests
+          - invalid api key
+  responses:
+    UnauthorizedJson:
+      description: Missing or invalid Private API Key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  securitySchemes:
+    PrivateApiKey:
+      type: http
+      scheme: bearer
+      description: Private API Key from the dashboard API tab (`sec_…`).
+    SecretKeyHeader:
+      type: http
+      scheme: bearer
+      description: Secret Key plus `X-Shield-Domain` header with your registered domain.

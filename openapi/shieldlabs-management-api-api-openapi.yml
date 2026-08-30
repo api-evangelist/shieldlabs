@@ -1,0 +1,216 @@
+openapi: 3.2.0
+info:
+  title: ShieldLabs Management API
+  version: '1.2'
+  description: "The ShieldLabs API surfaces visitor identification, anonymity detection, and\nabuse and fraud prevention for your application.\n\nThere are three surfaces:\n\n- The **JS snippet** posts collected signals to `rest.shieldlabs.ai` automatically.\n  You do not call this endpoint yourself. See [Install the snippet](/setup/snippet).\n- **Webhooks** deliver the Risk Score and signals to your server shortly after a\n  visit. See [Webhooks](/api/webhooks). Contract: schema_version `2026-06-01`\n  (`identification.scored` / `webhook.ping`), signature in `X-Shield-Signature`.\n- The **Server API** has two backend hosts:\n  - **History API** (recommended) on `account.shieldlabs.ai/api` — implemented by\n    **Shield.Portal.Admin**. Private API Key (`Authorization: Bearer sec_…`).\n    Envelope `{ data, total }`. See [Server API](/api/server-api).\n  - **Management API** on `api.shieldlabs.ai` — implemented by **Shield.Core**.\n    Secret Key in headers (`X-Shield-Domain` + `Authorization: Bearer`).\n    Profile, balance, and alternate billed History path (PascalCase array).\n\nThe Risk Score is an integer from 0 to 100. ShieldLabs scores visits; your own\ncode decides whether to allow, challenge, review, or block.\n"
+  contact:
+    email: support@shieldlabs.ai
+servers:
+- url: https://account.shieldlabs.ai/api
+  description: History API (Shield.Portal.Admin — Private API Key, recommended for snapshot reads)
+- url: https://api.shieldlabs.ai
+  description: Management API (Shield.Core — Secret Key — profile, balance, billed History)
+tags:
+- name: management-api
+  description: 'Profile, balance, and alternate History on api.shieldlabs.ai (service: Shield.Core).
+
+    Authenticated with Secret Key headers. History returns a PascalCase JSON array.
+
+    '
+paths:
+  /v1/profile:
+    get:
+      tags:
+      - management-api
+      summary: Get domain profile
+      description: 'Returns the profile for a domain: remaining request balance and masked keys. Free (0 requests).
+
+        '
+      operationId: getProfileV1
+      security:
+      - SecretKeyHeader: []
+      responses:
+        '200':
+          description: Domain profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '401':
+          $ref: '#/components/responses/UnauthorizedEmpty'
+  /v1/history/{type}/{value}:
+    get:
+      tags:
+      - management-api
+      summary: Search history by identifier (Management API)
+      description: 'Returns stored snapshots in a PascalCase JSON array, newest first. Each returned
+
+        row consumes one request from your balance (an empty result still consumes one).
+
+        Prefer `/api/v1/history/…` on account.shieldlabs.ai for new integrations.
+
+        Served by Shield.Core on api.shieldlabs.ai.
+
+        '
+      operationId: searchHistoryV1
+      security:
+      - SecretKeyHeader: []
+      parameters:
+      - name: type
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - ip
+          - user_hid
+          - visitor_id
+          - request_id
+          - device_id
+          - session_id
+          - cookie_id
+      - name: value
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 100
+      responses:
+        '200':
+          description: Matching snapshots, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Snapshot'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthorizedEmpty'
+        '402':
+          $ref: '#/components/responses/OutOfRequests'
+        '404':
+          description: Unsupported identifier type
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '503':
+          $ref: '#/components/responses/ServiceUnavailable'
+components:
+  schemas:
+    ScoreDetail:
+      type: object
+      description: Signal row on Management API Snapshot.Details (PascalCase). Not used in webhooks.
+      properties:
+        Value:
+          type: integer
+        Description:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          examples:
+          - too many requests
+          - invalid api key
+    Snapshot:
+      type: object
+      description: Snapshot from the Management API History path (PascalCase array element).
+      properties:
+        RequestID:
+          type: string
+          format: uuid
+        SessionID:
+          type: string
+          format: uuid
+        CookieID:
+          type: string
+          format: uuid
+        DeviceID:
+          type: string
+          format: uuid
+        VisitorID:
+          type: string
+          format: uuid
+        IP:
+          type: string
+        ConnectionType:
+          type: string
+          enum:
+          - direct
+          - mobile
+          - vpn
+          - proxy
+          - tor
+          - privacy_relay
+          - unknown
+        WebRtcHIP:
+          type: string
+        OS:
+          type: string
+        Browser:
+          type: string
+        DeviceType:
+          type: string
+        Country:
+          type: string
+        UserHID:
+          type: string
+        Score:
+          type: integer
+        Details:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScoreDetail'
+        LastRequestTime:
+          type: string
+          format: date-time
+    Profile:
+      type: object
+      properties:
+        Domain:
+          type: string
+        Weight:
+          type: integer
+        PublicKey:
+          type: string
+        Secret:
+          type: string
+        CreatedAt:
+          type: string
+          format: date-time
+  responses:
+    ServiceUnavailable:
+      description: Gateway concurrency cap reached
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    TooManyRequests:
+      description: Per-IP rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnauthorizedEmpty:
+      description: Missing or invalid credentials, or the domain is disabled (empty body)
+    OutOfRequests:
+      description: The domain has no remaining request balance (empty body)
+    BadRequest:
+      description: Invalid parameters (bare JSON string on Management API)
+  securitySchemes:
+    PrivateApiKey:
+      type: http
+      scheme: bearer
+      description: Private API Key from the dashboard API tab (`sec_…`).
+    SecretKeyHeader:
+      type: http
+      scheme: bearer
+      description: Secret Key plus `X-Shield-Domain` header with your registered domain.
