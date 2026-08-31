@@ -31,17 +31,17 @@ created: '2026-08-19'
 modified: '2026-08-19'
 specificationVersion: '0.21'
 tags:
-- Fraud Detection
-- Abuse Prevention
-- Visitor Identification
-- Device Fingerprinting
-- Bot Detection
+- fraud-detection
+- abuse-prevention
+- visitor-identification
+- device-fingerprinting
+- bot-detection
 - vpn-proxy-detection
-- Risk Scoring
+- risk-scoring
 - Identity
 - Security
 - Webhook
-- Anti-Fraud
+- anti-fraud
 - traffic-quality
 tags_raw:
 - fraud-detection
@@ -99,6 +99,8 @@ apis:
   humanURL: https://docs.shieldlabs.ai/api/overview
   baseURL: https://api.shieldlabs.ai
   tags:
+  - Management API
+  tags_raw:
   - management-api
   properties:
   - type: OpenAPI
