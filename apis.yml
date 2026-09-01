@@ -31,17 +31,17 @@ created: '2026-08-19'
 modified: '2026-08-19'
 specificationVersion: '0.21'
 tags:
-- fraud-detection
-- abuse-prevention
-- visitor-identification
-- device-fingerprinting
-- bot-detection
+- Fraud Detection
+- Abuse Prevention
+- Visitor Identification
+- Device Fingerprinting
+- Bot Detection
 - vpn-proxy-detection
-- risk-scoring
+- Risk Scoring
 - Identity
 - Security
 - Webhook
-- anti-fraud
+- Anti-Fraud
 - traffic-quality
 tags_raw:
 - fraud-detection
@@ -165,6 +165,9 @@ generated:
   confidence: 90
   at: '2026-08-19T16:02:26.724Z'
 common:
+- type: License
+  name: MIT
+  url: https://github.com/ShieldLabs-ai/shieldlabs-openapi/blob/main/LICENSE
 - type: Overlay
   url: overlays/shieldlabs-server-api-overlay.yaml
 - type: DeveloperPortal
