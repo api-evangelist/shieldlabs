@@ -2,8 +2,6 @@
 
 > Visitor identification and abuse-prevention docs for ShieldLabs: snippet, Risk Score, anonymity signals, Patterns, webhooks, and Server API.
 
-## Docs
-
 - [Visitor identification & abuse-prevention docs](https://docs.shieldlabs.ai/index.md): One JavaScript snippet returns a persistent VisitorID and DeviceID plus an explainable Risk Score your code acts on — up to 99% accuracy, API-first.
 - [Overview](https://docs.shieldlabs.ai/overview.md): Detect anonymous visitors, assess traffic quality, and prevent abuse and fraud, with up to 99% accuracy and a 5-minute install.
 - [Quick Start](https://docs.shieldlabs.ai/quickstart.md): Get from zero to your first scored visitor in about five minutes: install the snippet, receive the webhook, and act on the Risk Score.
@@ -14,7 +12,7 @@
 - [Anonymity Signals](https://docs.shieldlabs.ai/features/anonymity-signals.md): Learn which anonymity signals ShieldLabs detects, what each one means, and how they add up to a score.
 - [Risk Scoring](https://docs.shieldlabs.ai/features/risk-scoring.md): Learn how the Risk Score is built from 0 to 100, what its bands mean, and how each signal is weighted.
 - [Acting on the Risk Score](https://docs.shieldlabs.ai/guides/acting-on-risk-score.md): Learn how to turn the Risk Score and its signals into an allow, challenge, review, or block decision.
-- [Identification and anonymity-detection accuracy](https://docs.shieldlabs.ai/features/accuracy.md): Learn how ShieldLabs recognizes returning visitors and detects anonymity with up to 99% accuracy by combining Device and Network Intelligence, and where the limits are.
+- [Identification and anonymity-detection accuracy](https://docs.shieldlabs.ai/features/accuracy.md): Learn how ShieldLabs recognizes returning visitors and detects anonymity with up to 99% accuracy, and where the limits are.
 - [Patterns](https://docs.shieldlabs.ai/features/patterns.md): Learn how the ready-made patterns surface abuse and fraud across linked identifiers, and how they are graded.
 - [Traffic Analytics](https://docs.shieldlabs.ai/features/traffic-analytics.md): Learn how ShieldLabs measures traffic quality and ranks each source by the anonymous traffic it sends.
 - [Setup](https://docs.shieldlabs.ai/setup.md): An overview of everything you wire up to run ShieldLabs: the snippet, keys, webhooks, and domains.
@@ -70,4 +68,4 @@
 
 ## OpenAPI Specs
 
-- [openapi](https://docs.shieldlabs.ai/references/openapi.yaml)
+- [openapi](/references/openapi.yaml)

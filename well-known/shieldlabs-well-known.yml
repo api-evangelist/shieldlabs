@@ -1,104 +1,337 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: searched
-source: live probes of every ShieldLabs host
+source: live probes of every ShieldLabs host, 2026-09-04
 note: >-
-  Five /.well-known paths probed on five hosts (shieldlabs.ai, www.shieldlabs.ai, api.shieldlabs.ai,
-  account.shieldlabs.ai, docs.shieldlabs.ai). The apex, www and both API hosts serve nothing at
-  /.well-known/ — the apex returns the Next.js 404 shell and the API hosts return a plain
-  "404 page not found". The documentation host is the only one that serves real documents, and it
-  serves three: an A2A agent card, an MCP server descriptor, and an agent skill.
-hosts_probed:
-- https://shieldlabs.ai
-- https://www.shieldlabs.ai
-- https://api.shieldlabs.ai
-- https://account.shieldlabs.ai
-- https://docs.shieldlabs.ai
-documents:
+  Sixteen /.well-known and root discovery paths probed on eight hosts (shieldlabs.ai, www, api,
+  account, docs, app, cdn, rest), each with a browser User-Agent. The documentation host is still the
+  only one that serves real documents, and it serves two: the A2A agent card and the MCP server
+  descriptor. Both were re-fetched today and are byte-comparable to a live 200 (the card's embedded
+  skill description was REWRITTEN by the provider since the 2026-08-19 pass; the MCP descriptor is
+  unchanged).
+
+  TWO CONTROLS WERE RUN AND ONE FAILED. app.shieldlabs.ai — the dashboard SPA — answers HTTP 200 with
+  the same 1,512-byte HTML shell for EVERY path probed, including
+  /.well-known/shieldlabs-negative-control-7f3ab91c.json, which cannot exist. Every 200 on that host
+  is therefore a catch-all route, not a document; hit_count is 0 for it and it contributes no pointer
+  credit. docs.shieldlabs.ai passed the same control with a 404, so its two 200s are real.
+
+  APIs.json was probed for the first time this round (/.well-known/apis.json, /apis.json, /apis.yml on
+  every host): ShieldLabs publishes none. AAuth (/.well-known/aauth-resource.json), UCP and ACP were
+  also probed for the first time and all miss. There is still no RFC 9116 security.txt on any host,
+  no OIDC or OAuth discovery document, and no api-catalog — consistent with an API authenticated by
+  static bearer keys rather than OAuth.
+
+  api.shieldlabs.ai and rest.shieldlabs.ai returned 404 "404 page not found" on every named path and
+  then answered 429 {"error":"too many requests"} on the last probe of the sweep — the documented
+  per-IP ban, not a document. Their negative controls are therefore recorded as inconclusive rather
+  than passed; the 404s that preceded them are the evidence.
+controls:
+  negative_control_path: /.well-known/shieldlabs-negative-control-7f3ab91c.json
+  results:
+  - host: docs.shieldlabs.ai
+    status: 404
+    verdict: passed
+  - host: shieldlabs.ai
+    status: 404
+    verdict: passed
+  - host: account.shieldlabs.ai
+    status: 404
+    verdict: passed
+  - host: cdn.shieldlabs.ai
+    status: 404
+    verdict: passed
+  - host: app.shieldlabs.ai
+    status: 200
+    verdict: failed
+    detail: SPA catch-all — 200 text/html 1512 bytes for every path; all hits on this host discarded.
+  - host: api.shieldlabs.ai
+    status: 429
+    verdict: inconclusive
+    detail: per-IP rate-limit ban triggered mid-sweep; the 16 preceding named paths all returned 404.
+  - host: rest.shieldlabs.ai
+    status: 429
+    verdict: inconclusive
+    detail: per-IP rate-limit ban triggered mid-sweep; the 16 preceding named paths all returned 404.
+hosts:
 - host: https://docs.shieldlabs.ai
-  path: /.well-known/agent-card.json
-  status: 200
-  content_type: application/json
-  file: shieldlabs-agent-card.json
-- host: https://docs.shieldlabs.ai
-  path: /.well-known/mcp.json
-  status: 200
-  content_type: application/json
-  file: shieldlabs-mcp.json
-- host: https://docs.shieldlabs.ai
-  path: /.well-known/agent-skills/shieldlabs/skill.md
-  status: 200
-  content_type: text/markdown
-  file: ../skills/shieldlabs-shieldlabs.md
-  note: Provider-published Agent Skill, referenced from the agent card's skills[0].url.
-- host: https://docs.shieldlabs.ai
-  path: /.well-known/security.txt
-  status: 404
-- host: https://docs.shieldlabs.ai
-  path: /.well-known/openid-configuration
-  status: 404
-- host: https://docs.shieldlabs.ai
-  path: /.well-known/oauth-authorization-server
-  status: 404
-- host: https://docs.shieldlabs.ai
-  path: /.well-known/api-catalog
-  status: 404
-- host: https://docs.shieldlabs.ai
-  path: /.well-known/ai-plugin.json
-  status: 404
-- host: https://docs.shieldlabs.ai
-  path: /.well-known/agent.json
-  status: 404
+  soft_404_control: passed
+  hit_count: 2
+  documents:
+  - path: /.well-known/agent-card.json
+    status: 200
+    content_type: application/json
+    file: shieldlabs-agent-card.json
+    note: A2A Agent Card. Graded in a2a/shieldlabs-a2a.yml.
+  - path: /.well-known/mcp.json
+    status: 200
+    content_type: application/json
+    file: shieldlabs-mcp.json
+    note: MCP server descriptor. Live endpoint verified by tools/list — see mcp/shieldlabs-mcp.yml.
+  - path: /.well-known/agent-skills/shieldlabs/skill.md
+    status: 200
+    content_type: text/markdown
+    file: ../skills/shieldlabs-shieldlabs.md
+    note: >-
+      Provider-published Agent Skill, referenced from the agent card's skills[0].url. Not a
+      /.well-known discovery document in the RFC 8615 sense; recorded here because that is where the
+      provider serves it. Rewritten by the provider since 2026-08-19 and re-saved verbatim.
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /apis.yml
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
 - host: https://shieldlabs.ai
-  path: /.well-known/security.txt
-  status: 404
-- host: https://shieldlabs.ai
-  path: /.well-known/openid-configuration
-  status: 404
-- host: https://shieldlabs.ai
-  path: /.well-known/oauth-authorization-server
-  status: 404
-- host: https://shieldlabs.ai
-  path: /.well-known/api-catalog
-  status: 404
-- host: https://shieldlabs.ai
-  path: /.well-known/ai-plugin.json
-  status: 404
-- host: https://shieldlabs.ai
-  path: /.well-known/agent-card.json
-  status: 404
+  soft_404_control: passed
+  hit_count: 0
+  note: Next.js 404 shell (18,004 bytes text/html) on every path.
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/mcp.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /apis.yml
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
+- host: https://www.shieldlabs.ai
+  hit_count: 0
+  note: Every path 301-redirects to the apex; no document is served from the www host itself.
+  documents:
+  - path: /.well-known/security.txt
+    status: 301
+  - path: /.well-known/openid-configuration
+    status: 301
+  - path: /.well-known/oauth-authorization-server
+    status: 301
+  - path: /.well-known/api-catalog
+    status: 301
+  - path: /.well-known/agent-card.json
+    status: 301
+  - path: /.well-known/apis.json
+    status: 301
+  - path: /apis.json
+    status: 301
 - host: https://api.shieldlabs.ai
-  path: /.well-known/security.txt
-  status: 404
-- host: https://api.shieldlabs.ai
-  path: /.well-known/openid-configuration
-  status: 404
-- host: https://api.shieldlabs.ai
-  path: /.well-known/oauth-authorization-server
-  status: 404
-- host: https://api.shieldlabs.ai
-  path: /.well-known/api-catalog
-  status: 404
-- host: https://api.shieldlabs.ai
-  path: /.well-known/ai-plugin.json
-  status: 404
+  soft_404_control: inconclusive
+  hit_count: 0
+  note: Plain-text "404 page not found" (18 bytes) on every named path; the sweep ended in a 429 ban.
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/mcp.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /apis.yml
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
 - host: https://account.shieldlabs.ai
-  path: /.well-known/security.txt
-  status: 404
-- host: https://account.shieldlabs.ai
-  path: /.well-known/openid-configuration
-  status: 404
-- host: https://account.shieldlabs.ai
-  path: /.well-known/oauth-authorization-server
-  status: 404
-- host: https://account.shieldlabs.ai
-  path: /.well-known/api-catalog
-  status: 404
-- host: https://account.shieldlabs.ai
-  path: /.well-known/ai-plugin.json
-  status: 404
+  soft_404_control: passed
+  hit_count: 0
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/mcp.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /apis.yml
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
+- host: https://app.shieldlabs.ai
+  soft_404_control: failed
+  hit_count: 0
+  note: >-
+    Dashboard SPA catch-all. Returns 200 text/html 1512 bytes for every path including the negative
+    control, so none of its 200s is a document. NO pointer credit is taken from this host.
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    file: null
+    verdict: soft-200 SPA shell, not a document
+  - path: /.well-known/openid-configuration
+    status: 200
+    file: null
+    verdict: soft-200 SPA shell, not a document
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: null
+    verdict: soft-200 SPA shell, not a document
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    file: null
+    verdict: soft-200 SPA shell, not a document
+  - path: /.well-known/api-catalog
+    status: 200
+    file: null
+    verdict: soft-200 SPA shell, not a document
+  - path: /.well-known/agent-card.json
+    status: 200
+    file: null
+    verdict: soft-200 SPA shell, not a document
+  - path: /.well-known/apis.json
+    status: 200
+    file: null
+    verdict: soft-200 SPA shell, not a document
+  - path: /apis.json
+    status: 200
+    file: null
+    verdict: soft-200 SPA shell, not a document
+  - path: /.well-known/aauth-resource.json
+    status: 200
+    file: null
+    verdict: soft-200 SPA shell, not a document
+- host: https://cdn.shieldlabs.ai
+  soft_404_control: passed
+  hit_count: 0
+  note: Static CDN origin; 404 text/html (548 bytes) on every path.
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/mcp.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+- host: https://rest.shieldlabs.ai
+  soft_404_control: inconclusive
+  hit_count: 0
+  note: >-
+    The snippet ingest gateway named in the provider's own OpenAPI description. Plain-text
+    "404 page not found" on every named path; the sweep ended in a 429 ban.
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/mcp.json
+    status: 404
+  - path: /.well-known/apis.json
+    status: 404
+  - path: /apis.json
+    status: 404
+  - path: /apis.yml
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/ucp.json
+    status: 404
+  - path: /.well-known/acp.json
+    status: 404
 summary:
-  paths_probed: 70
-  documents_found: 3
+  hosts_probed: 8
+  paths_probed: 118
+  documents_found: 2
   security_txt: false
   openid_configuration: false
+  oauth_authorization_server: false
+  oauth_protected_resource: false
   api_catalog: false
+  apis_json: false
+  aauth_resource: false
+  ucp: false
+  acp: false
+  agent_card: true
+  mcp_descriptor: true
+  soft_404_hosts:
+  - app.shieldlabs.ai

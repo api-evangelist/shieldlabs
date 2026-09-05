@@ -1,6 +1,6 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: derived
-source: openapi/shieldlabs-server-api-openapi.yml + https://docs.shieldlabs.ai/privacy
+source: openapi/_original/shieldlabs-openapi.yaml + https://docs.shieldlabs.ai/legal/privacy-policy
 note: >-
   Cross-cutting standards assertion, derived from the provider's own spec and docs. ShieldLabs makes
   NO regulatory compliance claim — its privacy page says so in terms ("It is not legal advice and
@@ -9,7 +9,7 @@ note: >-
 standards:
 - id: openapi-3.1
   conforms: true
-  evidence: openapi/shieldlabs-server-api-openapi.yml declares openapi 3.1.0 and parses
+  evidence: openapi/_original/shieldlabs-openapi.yaml declares openapi 3.1.0 and parses (re-harvested 2026-09-04)
 - id: json-schema-2020-12
   conforms: true
   evidence: >-
@@ -30,10 +30,31 @@ standards:
     surface and status; the docs instruct clients to branch on status code, not on a body field
 - id: rfc9116-security-txt
   conforms: false
-  evidence: /.well-known/security.txt returns 404 on all five probed hosts
-- id: rfc8594-sunset-header
+  evidence: >-
+    /.well-known/security.txt returns 404 on all eight probed hosts (2026-09-04). The one host that
+    answers 200 — app.shieldlabs.ai — answers 200 for every path including a negative control, so it
+    is a SPA catch-all and not a document.
+- id: apisjson
   conforms: false
-  evidence: no Sunset or Deprecation header documented on any surface
+  evidence: >-
+    /.well-known/apis.json, /apis.json and /apis.yml all 404 on every host (first probed 2026-09-04).
+- id: aauth
+  conforms: false
+  evidence: /.well-known/aauth-resource.json 404 on every host (first probed 2026-09-04).
+- id: rfc8414-oauth-metadata
+  conforms: false
+  evidence: >-
+    /.well-known/oauth-authorization-server and /.well-known/oauth-protected-resource 404 on every
+    host. Consistent with static bearer-key authentication rather than OAuth.
+- id: rfc8594-sunset-header
+  conforms: true
+  verification: declared-in-contract-not-wire-observed
+  changed_since: 'false on 2026-08-19 — the deprecation did not exist until 2026-09-01'
+  evidence: >-
+    openapi/_original/shieldlabs-openapi.yaml#searchHistoryV1 carries `deprecated: true` and states
+    "Responses include `Deprecation`, `Sunset`, and `Link: rel=\"successor-version\"` pointing at the
+    History API. Sunset: 2027-01-01." Successor operation named (searchHistoryAccount). Not observed
+    on the wire because the operation requires a Secret Key. See lifecycle/shieldlabs-lifecycle.yml.
 - id: rfc6750-bearer-token
   conforms: true
   evidence: both securitySchemes are type http, scheme bearer, sent as Authorization Bearer
@@ -52,7 +73,10 @@ standards:
   evidence: limit/offset with a {data,total} envelope on the History API; limit-only on the Management API
 - id: rate-limit-headers-rfc9331
   conforms: false
-  evidence: no RateLimit-* or X-RateLimit-* or Retry-After headers documented; status code only
+  evidence: >-
+    No RateLimit-*, X-RateLimit-* or Retry-After header is documented on any surface, and the August
+    2026 rate-limits rewrite added four more limits without adding one. Five distinct limits now
+    return an identical 429 with an identical body and no field that distinguishes them.
 - id: a2a-agent-card
   conforms: partial
   evidence: >-
@@ -84,5 +108,42 @@ standards:
   conforms: false
 - id: hipaa
   conforms: false
+domain_standard:
+  market: fraud prevention / device intelligence / visitor identification
+  standard_declared: none
+  conforms: false
+  reward_only_note: >-
+    Checked and honestly empty. This market has no interoperability standard a contract can declare —
+    there is no SCIM-, OData-, OpenRTB-, FHIR- or ISO-20022-equivalent for device fingerprinting and
+    risk scoring, and no vendor-neutral risk-signal vocabulary that a competitor's client could
+    consume unchanged. The nearest adjacent standards are advertising-side (IAB/TAG invalid-traffic
+    taxonomies, which classify IVT rather than define an API) and identity-side (OpenID/FIDO, which
+    concern authentication, a thing this product deliberately does not do). ShieldLabs' signal names,
+    band labels (Clean/Low/Medium/High) and six identifier types are all first-party vocabulary, so
+    swapping ShieldLabs for another vendor requires a bespoke connector.
+  probed_for:
+  - a declared risk-signal vocabulary or taxonomy URN in the spec
+  - an IAB/TAG IVT classification mapping
+  - a shared schema for device or visitor identifiers
+  result: none present; nothing invented to fill the slot.
+published_spec_divergence:
+  note: >-
+    ShieldLabs publishes the SAME OpenAPI at two public locations and, as of 2026-09-04, they do not
+    match. The provider's own DRIFT.md names the docs copy as upstream and the GitHub copy as its
+    mirror, so the docs copy is treated as canonical here and is what openapi/_original/ holds.
+  canonical: https://docs.shieldlabs.ai/references/openapi.yaml
+  mirror: https://raw.githubusercontent.com/ShieldLabs-ai/shieldlabs-openapi/main/openapi.yaml
+  differences:
+  - The mirror still carries a `stun_request_seen` detection flag that the canonical copy has removed.
+  - The canonical copy adds `browser_vpn_proxy` to the ConnectionType enum; the mirror does not have it.
+  consequence: >-
+    An SDK generated from the GitHub repo — which the repo's README calls "source of truth for
+    generating the client SDKs" — produces a different type than one generated from the docs. Both
+    copies carry the 2026-09-03 deprecation, so the drift is in the webhook payload model only.
+  observed: '2026-09-04'
 certifications_published: []
 trust_center: null
+trust_center_probe:
+  url: https://trust.shieldlabs.ai
+  status: 000
+  note: DNS does not resolve; checked 2026-09-04.

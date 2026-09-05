@@ -1,4 +1,4 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: searched
 status: published
 source: https://docs.shieldlabs.ai/.well-known/mcp.json
@@ -10,11 +10,19 @@ note: >-
   the Mintlify docs platform, not a ShieldLabs Server API server. Its tools search and read the docs
   corpus; none of them call the History or Management API, and no tool identifies a visitor or returns
   a Risk Score. An agent can learn how to integrate ShieldLabs through MCP but cannot transact with it.
+
+  RE-PROBED 2026-09-04. The descriptor is byte-identical, the endpoint still answers an anonymous
+  tools/list over text/event-stream, and the same three tools come back with the same names. Nothing
+  moved in eleven weeks. The scope note above therefore still stands and should not be softened: the
+  MCPServer pointer on this record represents a documentation surface, not a transactional one.
 deployment:
   mode: remote
   endpoint: https://docs.shieldlabs.ai/mcp
   auth: none
   verified: probed
+  reverified: '2026-09-04'
+  package: null
+  install: null
 server:
   name: shieldlabs
   transport: http
@@ -50,12 +58,15 @@ tools:
     path: string
     feedback: string
 x-evidence:
-  probed: '2026-08-19'
+  probed: '2026-09-04'
+  first_probed: '2026-08-19'
   descriptor_url: https://docs.shieldlabs.ai/.well-known/mcp.json
   descriptor_status: 200
   tools_list_url: https://docs.shieldlabs.ai/mcp
   tools_list_status: 200
   tools_list_method: 'POST {"jsonrpc":"2.0","id":1,"method":"tools/list"}'
+  tools_list_transport: text/event-stream
   tools_returned: 3
+  tools_changed_since_first_probe: false
   auth_required: false
   raw: shieldlabs-mcp-tools-list.json

@@ -1,6 +1,6 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: derived
-source: mcp/shieldlabs-mcp.yml + openapi/shieldlabs-server-api-openapi.yml
+source: mcp/shieldlabs-mcp.yml + openapi/_original/shieldlabs-openapi.yaml
 note: >-
   Crosswalk between the live MCP tool set and the published OpenAPI. The headline finding is a total
   divergence: ShieldLabs' MCP server is a documentation server, so ZERO of its three tools bind to a
@@ -9,8 +9,9 @@ note: >-
   read a Risk Score, or check a balance. Both surfaces are real; neither is a projection of the other.
 surfaces:
   openapi:
-    file: openapi/shieldlabs-server-api-openapi.yml
+    file: openapi/_original/shieldlabs-openapi.yaml
     operations: 3
+    deprecated_operations: 1
     webhooks: 1
     gated: false
   mcp:
@@ -31,7 +32,7 @@ rest_only:
 - capability: History reads
   operations:
   - searchHistoryAccount
-  - searchHistoryV1
+  - searchHistoryV1 (deprecated, sunset 2027-01-01)
   reason: >-
     Snapshot lookup by identifier (ip, user_hid, visitor_id, request_id, device_id, session_id,
     cookie_id) on both the History API and the Management API. No MCP tool exposes it.
@@ -52,3 +53,5 @@ coverage:
   rest_operations_total: 3
   rest_operations_with_a_tool: 0
   rest_coverage_pct: 0
+  rest_operations_deprecated: 1
+  reverified: '2026-09-04'

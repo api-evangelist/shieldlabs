@@ -1,7 +1,7 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: searched
 source: https://docs.shieldlabs.ai/api/webhooks
-derived_from: openapi/shieldlabs-server-api-openapi.yml
+derived_from: openapi/_original/shieldlabs-openapi.yaml
 spec_type: Webhooks
 asyncapi_published: false
 note: >-
@@ -9,8 +9,12 @@ note: >-
   and searched the GitHub org, which holds no event spec. It does, however, publish a real and unusually
   well-specified webhook contract: the event surface is modelled with the OpenAPI 3.1 top-level
   `webhooks` object in the provider's own spec, AND a standalone JSON Schema 2020-12 document derived
-  1:1 from the live Shield.Core code, AND a signature-verification guide with reference handlers.
-  This webhook catalog is captured here rather than fabricating an AsyncAPI.
+  1:1 from the live production code, AND a signature-verification guide with reference handlers.
+  This webhook catalog is captured here rather than fabricating an AsyncAPI. Re-probed 2026-09-04:
+  /asyncapi.yaml and /asyncapi.json still 404 on every host and the GitHub organization still holds
+  no event specification, so the position is unchanged. The webhook JSON Schema WAS updated by the
+  provider on 2026-09-02 — internal Go type names were stripped from its descriptions — and the
+  re-fetched copy is saved verbatim.
   DELIVERY MODEL MATTERS HERE: delivery is AT-MOST-ONCE WITH NO RETRIES. There is exactly one attempt
   per identification. If the consumer's endpoint is down, that score is not redelivered — it must be
   recovered by reading the History API by request_id. That is the single most consequential fact on
@@ -28,6 +32,10 @@ security:
 delivery:
   guarantee: at-most-once
   retries: false
+  replay_endpoint: null
+  reversibility: >-
+    A delivery cannot be replayed or redelivered — the provider publishes no such endpoint. Recovery
+    is a History API read by request_id, not a retry. See conventions/shieldlabs-conventions.yml.
   latency: >-
     waits up to 60 seconds for an optional follow-up network check, then always delivers
   ack: return 200 quickly
@@ -37,7 +45,7 @@ delivery:
     request balance
   billing: webhook deliveries are never billed
 envelope:
-  schema: openapi/shieldlabs-server-api-openapi.yml#/components/schemas/WebhookEvent
+  schema: openapi/_original/shieldlabs-openapi.yaml#/components/schemas/WebhookEvent
   json_schema: json-schema/shieldlabs-identification-scored.schema.json
   example: examples/shieldlabs-identification-scored-example.json
   fields: [event_type, schema_version, created_at, data]
@@ -49,7 +57,7 @@ events:
     One signed envelope per scored visit, carrying the identifiers, the 0-100 Risk Score, the weighted
     signals that produced it, 18 denormalized detection flags, public and local IP with country,
     device/browser/OS, and traffic-source attribution.
-  payload_schema: openapi/shieldlabs-server-api-openapi.yml#/components/schemas/WebhookScoredData
+  payload_schema: openapi/_original/shieldlabs-openapi.yaml#/components/schemas/WebhookScoredData
   required_fields: [request_id, visitor_id, device_id, risk_score, signals, detection_flags, observed_at]
   cardinality: one per identification
 - name: webhook.ping

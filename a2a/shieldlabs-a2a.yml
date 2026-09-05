@@ -1,10 +1,17 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: probed
 source: https://docs.shieldlabs.ai/.well-known/agent-card.json
 description: >-
   A2A Agent Card observed at /.well-known/agent-card.json on docs.shieldlabs.ai. Provider-published
   by construction — served from a ShieldLabs-controlled host; nothing here is derived or generated.
   Graded against the A2A 1.0.0 AgentCard object.
+
+  RE-PROBED 2026-09-04: still HTTP 200, still application/json, and the card CHANGED. The provider
+  rewrote the description of its one advertised skill — it is now organised around the situations an
+  agent finds itself in (building login/signup flows, processing payments, protecting sensitive
+  actions, analysing traffic quality) rather than around product features. The card's structure,
+  version, protocolVersion and skill URL are unchanged, so the grade does not move. The new body is
+  saved verbatim over the old one.
 discovery:
   path: /.well-known/agent-card.json
   canonical: true
@@ -12,7 +19,9 @@ discovery:
   notes: >-
     Probed on every ShieldLabs host. shieldlabs.ai, www.shieldlabs.ai, api.shieldlabs.ai and
     account.shieldlabs.ai all return 404 for both /.well-known/agent-card.json and the legacy
-    /.well-known/agent.json. Only the documentation host serves a card, and it is emitted by the
+    /.well-known/agent.json; re-probed 2026-09-04 across eight hosts with the same result. The one
+    host that answers 200 for those paths, app.shieldlabs.ai, answers 200 for a negative-control path
+    that cannot exist, so it is a single-page-app catch-all and not a card. Only the documentation host serves a card, and it is emitted by the
     docs platform (Mintlify, x-matched-path /_sites/[subdomain]/.well-known/agent-card.json)
     rather than by the ShieldLabs Server API itself — the card's url, provider.url and
     documentationUrl all point back at https://docs.shieldlabs.ai/, not at the API surface.
@@ -28,6 +37,11 @@ conformance:
   deviations:
   - supportedInterfaces-instead-of-additionalInterfaces
   - protocol-version-0.3-pre-1.0
+  grade_rationale: >-
+    All three hard checks pass — capabilities is an object, protocolVersion is present, skills is an
+    array — but the card uses the pre-1.0 `supportedInterfaces` key in place of
+    `additionalInterfaces` and declares protocolVersion 0.3, so it is graded flavored rather than
+    conformant. Unchanged on the 2026-09-04 re-probe.
 card:
   name: ShieldLabs
   description: >-
@@ -51,8 +65,12 @@ card:
   - https://docs.shieldlabs.ai/.well-known/agent-skills/shieldlabs/skill.md
   file: shieldlabs-agent-card.json
 x-evidence:
-  fetched: '2026-08-19'
+  fetched: '2026-09-04'
   url: https://docs.shieldlabs.ai/.well-known/agent-card.json
   http_status: 200
   content_type: application/json
+  bytes: 1202
+  negative_control: /.well-known/shieldlabs-negative-control-7f3ab91c.json returned 404 on this host
+  first_fetched: '2026-08-19'
+  changed_since_first_fetch: skills[0].description rewritten by the provider
   note: Verbatim body saved alongside this manifest. No field inferred.

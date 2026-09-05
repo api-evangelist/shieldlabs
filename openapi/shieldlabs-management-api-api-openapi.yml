@@ -2,19 +2,19 @@ openapi: 3.2.0
 info:
   title: ShieldLabs Management API
   version: '1.2'
-  description: "The ShieldLabs API surfaces visitor identification, anonymity detection, and\nabuse and fraud prevention for your application.\n\nThere are three surfaces:\n\n- The **JS snippet** posts collected signals to `rest.shieldlabs.ai` automatically.\n  You do not call this endpoint yourself. See [Install the snippet](/setup/snippet).\n- **Webhooks** deliver the Risk Score and signals to your server shortly after a\n  visit. See [Webhooks](/api/webhooks). Contract: schema_version `2026-06-01`\n  (`identification.scored` / `webhook.ping`), signature in `X-Shield-Signature`.\n- The **Server API** has two backend hosts:\n  - **History API** (recommended) on `account.shieldlabs.ai/api` — implemented by\n    **Shield.Portal.Admin**. Private API Key (`Authorization: Bearer sec_…`).\n    Envelope `{ data, total }`. See [Server API](/api/server-api).\n  - **Management API** on `api.shieldlabs.ai` — implemented by **Shield.Core**.\n    Secret Key in headers (`X-Shield-Domain` + `Authorization: Bearer`).\n    Profile, balance, and alternate billed History path (PascalCase array).\n\nThe Risk Score is an integer from 0 to 100. ShieldLabs scores visits; your own\ncode decides whether to allow, challenge, review, or block.\n"
+  description: "The ShieldLabs API surfaces visitor identification, anonymity detection, and\nabuse and fraud prevention for your application.\n\nThere are three surfaces:\n\n- The **JS snippet** posts collected signals to `rest.shieldlabs.ai` automatically.\n  You do not call this endpoint yourself. See [Install the snippet](/setup/snippet).\n- **Webhooks** deliver the Risk Score and signals to your server shortly after a\n  visit. See [Webhooks](/api/webhooks). Contract: schema_version `2026-06-01`\n  (`identification.scored` / `webhook.ping`), signature in `X-Shield-Signature`.\n- The **Server API** has two backend hosts:\n  - **History API** (recommended) on `account.shieldlabs.ai/api`.\n    Private API Key (`Authorization: Bearer sec_…`).\n    Envelope `{ data, total }`. See [Server API](/api/server-api).\n  - **Management API** on `api.shieldlabs.ai`.\n    Secret Key in headers (`X-Shield-Domain` + `Authorization: Bearer`).\n    Profile and balance (Secret Key). Snapshot history: use History API.\n\nThe Risk Score is an integer from 0 to 100. ShieldLabs scores visits; your own\ncode decides whether to allow, challenge, review, or block.\n"
   contact:
     email: support@shieldlabs.ai
 servers:
 - url: https://account.shieldlabs.ai/api
-  description: History API (Shield.Portal.Admin — Private API Key, recommended for snapshot reads)
+  description: History API (Private API Key, recommended for snapshot reads)
 - url: https://api.shieldlabs.ai
-  description: Management API (Shield.Core — Secret Key — profile, balance, billed History)
+  description: Management API (Secret Key — profile and balance)
 tags:
 - name: management-api
-  description: 'Profile, balance, and alternate History on api.shieldlabs.ai (service: Shield.Core).
+  description: 'Profile and balance on api.shieldlabs.ai.
 
-    Authenticated with Secret Key headers. History returns a PascalCase JSON array.
+    Authenticated with Secret Key headers. GET /v1/history is deprecated; use History API.
 
     '
 paths:
@@ -42,14 +42,17 @@ paths:
     get:
       tags:
       - management-api
-      summary: Search history by identifier (Management API)
-      description: 'Returns stored snapshots in a PascalCase JSON array, newest first. Each returned
+      summary: Search history by identifier (deprecated)
+      deprecated: true
+      description: 'Deprecated. Use `searchHistoryAccount` on account.shieldlabs.ai
 
-        row consumes one request from your balance (an empty result still consumes one).
+        (`https://account.shieldlabs.ai/api/v1/history`). Sunset: 2027-01-01.
 
-        Prefer `/api/v1/history/…` on account.shieldlabs.ai for new integrations.
+        Responses include `Deprecation`, `Sunset`, and `Link: rel="successor-version"`
 
-        Served by Shield.Core on api.shieldlabs.ai.
+        pointing at the History API. Still returns stored snapshots in a PascalCase
+
+        JSON array, newest first. Does not consume request balance. Served on api.shieldlabs.ai.
 
         '
       operationId: searchHistoryV1
@@ -94,8 +97,6 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '401':
           $ref: '#/components/responses/UnauthorizedEmpty'
-        '402':
-          $ref: '#/components/responses/OutOfRequests'
         '404':
           description: Unsupported identifier type
         '429':
@@ -104,14 +105,6 @@ paths:
           $ref: '#/components/responses/ServiceUnavailable'
 components:
   schemas:
-    ScoreDetail:
-      type: object
-      description: Signal row on Management API Snapshot.Details (PascalCase). Not used in webhooks.
-      properties:
-        Value:
-          type: integer
-        Description:
-          type: string
     Error:
       type: object
       properties:
@@ -122,7 +115,7 @@ components:
           - invalid api key
     Snapshot:
       type: object
-      description: Snapshot from the Management API History path (PascalCase array element).
+      description: Deprecated Management History array element (PascalCase). Prefer History API snake_case rows.
       properties:
         RequestID:
           type: string
@@ -150,6 +143,7 @@ components:
           - proxy
           - tor
           - privacy_relay
+          - browser_vpn_proxy
           - unknown
         WebRtcHIP:
           type: string
@@ -186,6 +180,14 @@ components:
         CreatedAt:
           type: string
           format: date-time
+    ScoreDetail:
+      type: object
+      description: Signal row on Management API Snapshot.Details (PascalCase). Not used in webhooks.
+      properties:
+        Value:
+          type: integer
+        Description:
+          type: string
   responses:
     ServiceUnavailable:
       description: Gateway concurrency cap reached
@@ -199,12 +201,10 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    UnauthorizedEmpty:
-      description: Missing or invalid credentials, or the domain is disabled (empty body)
-    OutOfRequests:
-      description: The domain has no remaining request balance (empty body)
     BadRequest:
       description: Invalid parameters (bare JSON string on Management API)
+    UnauthorizedEmpty:
+      description: Missing or invalid credentials, or the domain is disabled (empty body)
   securitySchemes:
     PrivateApiKey:
       type: http

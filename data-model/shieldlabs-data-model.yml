@@ -1,6 +1,6 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: derived
-source: openapi/shieldlabs-server-api-openapi.yml
+source: openapi/_original/shieldlabs-openapi.yaml (re-harvested 2026-09-04)
 docs: https://docs.shieldlabs.ai/api/models
 note: >-
   Entity graph derived from the OpenAPI $ref links and the identifier fields. The domain has an
@@ -8,6 +8,14 @@ note: >-
   whole model is one immutable observation — a scored visit — plus the six identifiers it is indexed
   by. The same observation is materialized in THREE different shapes depending on where it is read
   from, and the shapes do not share field names or casing.
+
+  Re-derived 2026-09-04 against a re-harvested spec. Two model changes landed since the last pass:
+  ConnectionType gained the value `browser_vpn_proxy` (a browser-extension VPN, previously only
+  representable as a detection flag), and the whole Management-API materialization is now DEPRECATED
+  with a sunset of 2027-01-01. That matters more than it looks: the PascalCase shape is one of the
+  three materializations of this single entity, so a client that models Snapshot from the Management
+  API is modelling a surface that is scheduled to disappear. The webhook and History API shapes are
+  the two that survive.
 entities:
 - name: Snapshot (observation)
   description: One scored visit. Immutable, created by the snippet, never written by a client.
@@ -21,7 +29,14 @@ entities:
     surface: Management API (api.shieldlabs.ai)
     casing: PascalCase
     key_fields: [RequestID, SessionID, CookieID, DeviceID, VisitorID, IP, ConnectionType, WebRtcHIP, OS, Browser, DeviceType, Country, UserHID, Score, Details, LastRequestTime]
-    note: Details is a real array of ScoreDetail {Value, Description}
+    connection_type_enum: [direct, mobile, vpn, proxy, tor, privacy_relay, browser_vpn_proxy, unknown]
+    deprecated: true
+    sunset: '2027-01-01'
+    successor: AccountSnapshot on the History API
+    note: >-
+      Details is a real array of ScoreDetail {Value, Description}. This materialization is served only
+      by the deprecated searchHistoryV1 operation and disappears with it on 2027-01-01. New models
+      should be built on AccountSnapshot or WebhookScoredData.
   - name: WebhookScoredData
     surface: outbound webhook
     casing: snake_case
@@ -45,7 +60,9 @@ entities:
   fields: [vpn, privacy_relay, browser_vpn_proxy, tor, proxy, datacenter_ip, abuser, os_mismatch, os_not_detected, timezone_mismatch, anti_detect_browser, browser_automation, ip_mismatch, incognito, search_bot, suspicious_paid_click, javascript_disabled, stun_not_checked]
   note: >-
     The provider's own OpenAPI repo carries a 19th flag, stun_request_seen, that the docs-hosted copy
-    of the spec omits — the only substantive difference between the two published copies.
+    of the spec omits. Re-checked 2026-09-04 and the divergence persists, now alongside a second one:
+    the docs copy adds browser_vpn_proxy to the ConnectionType enum and the GitHub copy does not. See
+    conformance/shieldlabs-conformance.yml#published_spec_divergence.
 - name: WebhookTrafficSource
   description: Acquisition attribution for the visit.
   fields: [channel, referrer_domain, landing_url, click_id_type, utm_source, utm_medium, utm_campaign, utm_content, utm_term]

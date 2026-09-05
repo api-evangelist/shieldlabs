@@ -4,7 +4,7 @@ info:
   version: 1.0.0
 extends: openapi/shieldlabs-server-api-openapi.yml
 x-provenance:
-  generated: '2026-08-19'
+  generated: '2026-09-04'
   method: generated
   source: >-
     Derived from the artifacts in this repo. Captures API Evangelist annotations without mutating the
@@ -14,6 +14,12 @@ actions:
   update:
     x-apievangelist-artifacts:
       authentication: authentication/shieldlabs-authentication.yml
+      changelog: changelog/shieldlabs-changelog.yml
+      conformance: conformance/shieldlabs-conformance.yml
+      packages: packages/shieldlabs-packages.yml
+      sandbox: sandbox/shieldlabs-sandbox.yml
+      tool_crosswalk: mcp/shieldlabs-tool-crosswalk.yml
+      well_known: well-known/shieldlabs-well-known.yml
       conventions: conventions/shieldlabs-conventions.yml
       errors: errors/shieldlabs-problem-types.yml
       rate_limits: rate-limits/shieldlabs-rate-limits.yml
@@ -23,12 +29,14 @@ actions:
       webhooks: asyncapi/shieldlabs-webhooks.yml
       mcp: mcp/shieldlabs-mcp.yml
       agent_card: a2a/shieldlabs-a2a.yml
-    x-apievangelist-spec-source: https://github.com/ShieldLabs-ai/shieldlabs-openapi
+    x-apievangelist-spec-source: https://docs.shieldlabs.ai/references/openapi.yaml
+    x-apievangelist-spec-mirror: https://github.com/ShieldLabs-ai/shieldlabs-openapi
     x-apievangelist-spec-note: >-
-      Two published copies of this spec exist. The docs-hosted copy at
-      https://docs.shieldlabs.ai/references/openapi.yaml omits the stun_request_seen detection flag
-      that the provider's own OpenAPI repo carries. The repo copy is archived here as the source of
-      truth, per that repo's own README.
+      Two published copies of this spec exist and they diverge. The docs-hosted copy omits the
+      stun_request_seen detection flag the GitHub copy still carries, and adds browser_vpn_proxy to
+      the ConnectionType enum, which the GitHub copy lacks. The DOCS copy is treated as canonical and
+      is what openapi/_original/ holds, because the provider's own DRIFT.md names the docs spec as
+      upstream and the repository copy as its mirror. Re-verified 2026-09-04.
 - target: $.paths['/api/v1/history/{search_type}/{value}'].get
   update:
     x-apievangelist-billing: free — does not consume request balance
@@ -38,14 +46,24 @@ actions:
 - target: $.paths['/v1/history/{type}/{value}'].get
   update:
     x-apievangelist-billing: >-
-      bills one request per returned row, minimum one — a zero-row lookup still bills one
+      free — does not consume request balance. The earlier per-row billing claim was withdrawn by the
+      provider on 2026-09-01 and its 402 response was removed from the operation.
     x-apievangelist-recommended: false
+    x-apievangelist-deprecated: true
+    x-apievangelist-sunset: '2027-01-01'
     x-apievangelist-superseded-by: searchHistoryAccount
+    x-apievangelist-successor-url: https://account.shieldlabs.ai/api/v1/history/{search_type}/{value}
+    x-apievangelist-deprecation-headers: 'Deprecation, Sunset, Link rel="successor-version"'
     x-apievangelist-casing: PascalCase
-    x-apievangelist-rate-limited: 20 requests/minute per source IP, then a 1-hour IP ban
+    x-apievangelist-rate-limited: 15 requests/minute per source IP, then a 10-minute IP ban
 - target: $.paths['/v1/profile'].get
   update:
     x-apievangelist-billing: free (0 requests)
+    x-apievangelist-rate-limited: 15 requests/minute per source IP, then a 10-minute IP ban
+- target: $.paths['/api/v1/history/{search_type}/{value}'].get
+  update:
+    x-apievangelist-rate-limited: 15 requests/second per site, soft 429, no ban
+    x-apievangelist-reversibility: 'na — read-only operation'
 - target: $.webhooks.identificationScored.post
   update:
     x-apievangelist-delivery: at-most-once, no retries

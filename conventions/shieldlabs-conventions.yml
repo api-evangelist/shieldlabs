@@ -1,4 +1,4 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: searched
 source: https://docs.shieldlabs.ai/api/overview
 derived_from: openapi/shieldlabs-server-api-openapi.yml
@@ -26,6 +26,17 @@ authentication:
   cross_reference: authentication/shieldlabs-authentication.yml
 idempotency:
   supported: true
+  coverage: na
+  write_surface: none
+  read_only_api: true
+  coverage_rationale: >-
+    `coverage` is `na`, not `none` and not `full`. The public ShieldLabs API has NO mutating
+    operations at all — every published operation is a GET (searchHistoryAccount, getProfileV1,
+    searchHistoryV1), so there is no write surface for a replay-protection mechanism to cover and an
+    Idempotency-Key header would have nothing to protect. Scoring this as `none` would penalise the
+    provider for omitting a mechanism that cannot apply. What the provider DOES publish is the
+    inbound half of the same problem — a consumer-side deduplication contract for at-most-once
+    webhook delivery — recorded below, which is real and is why `supported` is true.
   mechanism: consumer-side deduplication key on the event, not a request header
   key_field: request_id
   scope: one identification (one visitor check)
@@ -98,6 +109,51 @@ rate_limit_signalling:
   headers: []
   status_codes: [429, 503]
   cross_reference: rate-limits/shieldlabs-rate-limits.yml
+reversibility:
+  grade: na
+  applies: false
+  write_surface: none
+  detail: >-
+    Reversibility is `na` for the same reason idempotency is: there is nothing to reverse. All three
+    published operations are reads, and the one thing a caller can cause — an identification — is not
+    caused through the API at all. It is caused by a visitor loading the page with the snippet on it,
+    and it produces an immutable observation of that visit. There is no cancel, refund, void, undo,
+    rollback or restore operation in the spec, and no docs page describes one, because there is no
+    created object to take back.
+  reversal_operations: []
+  windows: []
+  irreversible_effects:
+  - effect: An identification is billed the moment it is scored.
+    reversal: none published
+    note: >-
+      Billing is per identification and the docs describe no credit, refund or void path for one that
+      was collected in error. Cost control is placement of the snippet call, not reversal — the
+      provider's own guidance page is "Optimize usage and cost", not a refund policy.
+    docs: https://docs.shieldlabs.ai/setup/optimizing-usage
+  - effect: A stored snapshot is retained and readable through History.
+    reversal: none published on the API
+    note: >-
+      No DELETE operation exists on either Server API host. Data-subject deletion is described in the
+      privacy policy as a request process to contact@shieldlabs.ai, not an API call, so it is out of
+      band and has no stated window.
+    docs: https://docs.shieldlabs.ai/legal/privacy-policy
+  - effect: A webhook delivery is at-most-once with no retries.
+    reversal: not applicable — recovery is a History API read, not a replay
+    note: >-
+      The provider publishes no webhook replay or redelivery endpoint. If a delivery is missed the
+      documented recovery is to read the snapshot back by request_id from the History API. That is a
+      recovery path, not a reversal, and it is recorded here so an agent does not wait for a retry
+      that will never come.
+    docs: https://docs.shieldlabs.ai/setup/webhooks
+  evidence:
+  - openapi/_original/shieldlabs-openapi.yaml
+  - https://docs.shieldlabs.ai/api/server-api
+dry_run_mode:
+  supported: na
+  detail: >-
+    No dry-run, preview or simulate mode is published, and none is meaningful against a read-only
+    surface. The provider's stated equivalent is environment separation — a second registered domain
+    with its own keys and balance (see sandbox/shieldlabs-sandbox.yml), not a flag on a request.
 webhook_conventions:
   signature_header: 'X-Shield-Signature: sha256=<hex>'
   algorithm: HMAC-SHA256 over the raw request body

@@ -1,11 +1,17 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: searched
 source: https://docs.shieldlabs.ai/changelog
 note: >-
-  A dated, human-readable changelog exists but it is thin: one entry, covering the June 2026
-  documentation rebuild. There is no feed, no per-release version numbers, and no history before it.
-  The entry is unusually candid — it is a correction notice stating that the previous documentation
-  described a score range and features the product does not have, and it enumerates what was wrong.
+  A dated, human-readable changelog, now TWO entries deep. Still no feed and still no per-release
+  version numbers, but it is no longer a one-off: an August 2026 section was added since the last
+  pass and it is doing real work — it publishes three corrections to previously documented rate
+  limits, in the form "not 20/minute and not a 1-hour ban". A provider that names the number it got
+  wrong is rarer than one that keeps a changelog at all, and it is why rate-limits/ could be
+  corrected this round from the provider's own words rather than from observed drift.
+
+  Both entries are month-granular ("August 2026", "June 2026") rather than dated releases, so a
+  consumer can see THAT something changed in a month but not on which day or against which version.
+  There is still no history before June 2026.
 scheme: dated sections, newest first
 feed: null
 current_version:
@@ -13,6 +19,32 @@ current_version:
   spec: '1.2'
   webhook_schema: '2026-06-01'
 entries:
+- date: '2026-08'
+  title: Ingest limits, domain freeze, and History API soft cap
+  breaking: false
+  breaking_note: >-
+    Not breaking as a contract change, but corrective as documentation: two limits an integrator may
+    have coded against were published wrong before this entry.
+  corrections:
+  - Per-IP REST ingest is 15 requests per minute, not 20.
+  - The per-IP ban is 10 minutes, not 1 hour.
+  - Score 999 is only the sticky per-IP ban marker — soft 429s do not write it.
+  - Active domains per plan are Free 1, Starter 1, Growth 3, Scale 5; domains already over the cap keep running and only new creates are refused.
+  highlights:
+  - >-
+    Domain freeze — a domain sitting at its plan ingest cap for 10 seconds in a row has processing
+    paused: same 429, no billing during the pause, no 999, and it is not a disabled domain. WebRTC
+    for that domain pauses the same way.
+  - >-
+    History API soft rate limit — account.shieldlabs.ai now allows 15 requests per second per site,
+    with a soft 429 and no ban, independent of the ingest limits. This surface was previously
+    documented as not rate limited.
+  - Per-domain REST ingest published per plan: 5 / 5 / 10 / 15 requests per second, soft 429, no domain ban.
+  - Shared REST ingest cap published at 40 requests per second, soft 429.
+  affects:
+  - rate-limits/shieldlabs-rate-limits.yml
+  - plans/shieldlabs-plans-pricing.yml
+  source: https://docs.shieldlabs.ai/changelog
 - date: '2026-06'
   title: Documentation rebuilt from the production codebase
   breaking: true
@@ -33,4 +65,22 @@ entries:
   - Visitors and Traffic Sources analytics ranking each channel by anonymous-traffic share.
   - Server API documented — History API reads plus domain profile, with Authorization Bearer + X-Shield-Domain.
   - Six identifiers documented — DeviceID, VisitorID, CookieID, SessionID, RequestID, and the caller-supplied UserHID.
-entry_count: 1
+entry_count: 2
+undated_changes_since_last_pass:
+  note: >-
+    Three changes landed in the provider's public OpenAPI repository between 2026-09-01 and
+    2026-09-03 and are NOT in the docs changelog. They are recorded here because a consumer watching
+    only the changelog would miss a deprecation with a dated sunset.
+  changes:
+  - date: '2026-09-01'
+    change: >-
+      GET /v1/history on the Management API marked `deprecated: true` in the spec, with the successor
+      named and Sunset 2027-01-01 stated in the operation description.
+    commit: 'spec: deprecate searchHistoryV1 and drop fake billing'
+  - date: '2026-09-02'
+    change: Internal repository and Go type names stripped from the public OpenAPI spec and webhook JSON Schema.
+    commit: 'Strip internal repo and Go type names from the public OpenAPI spec.'
+  - date: '2026-09-03'
+    change: Sunset 2027-01-01 documented for the deprecated Management History path.
+    commit: 'Document Sunset 2027-01-01 for deprecated Management History.'
+  source: https://github.com/ShieldLabs-ai/shieldlabs-openapi/commits/main

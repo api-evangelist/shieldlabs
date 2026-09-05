@@ -1,4 +1,4 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: searched
 source: https://github.com/ShieldLabs-ai
 docs: https://docs.shieldlabs.ai/setup/snippet
@@ -14,6 +14,20 @@ note: >-
   a consumer cannot `npm install` or `pip install` any of these today. Do not read these as shipped
   SDKs. Separately, the docs themselves state there is no native SDK and show the raw ES-module
   snippet in every integration example, which is consistent with the registry evidence.
+
+  RE-PROBED 2026-09-04, AND NOTHING SHIPPED. Every registry still answers 404 — npm for
+  @shieldlabs/js, /react, /vue, /next and /node; PyPI for shieldlabs; Packagist for
+  shieldlabs/shieldlabs; RubyGems and crates.io (added to the probe list this round) for shieldlabs;
+  and the Go module proxy still returns an empty version list. The GitHub tag count across all six
+  SDK repositories and the OpenAPI repository is ZERO. jsDelivr has no package record either.
+
+  The decay signal is now readable, and it is the useful part of this artifact. Seven of the eight
+  client libraries have not been touched since 2026-07-27 — five and a half weeks of no commits —
+  while the API they wrap moved twice in that window: the webhook payload model changed on 2026-09-02
+  and an operation was deprecated with a dated sunset on 2026-09-03. The only repository in the
+  organization that tracked those changes is shieldlabs-openapi, the spec itself. So the SDKs are
+  now demonstrably behind the contract they are generated from, and because none of them is
+  published, a consumer cannot even pull a fixed older version — there is nothing to pull.
   The npm package @shieldlabs/cra-template-frontend (last published 2020-02-13) is a DIFFERENT
   organization and is deliberately excluded.
 packages:
@@ -29,6 +43,8 @@ packages:
   registry_status: 404
   registry_url_probed: https://registry.npmjs.org/@shieldlabs%2fjs
   repo_last_push: '2026-07-27'
+  registry_recheck: '2026-09-04'
+  tags: 0
   note: >-
     Browser loader that pulls the collection agent from the CDN and returns identification results.
     Source exists and is current; nothing is published to npm and the repo has no tags, so version is
@@ -44,6 +60,8 @@ packages:
   manifest_version: 0.0.0
   registry_status: 404
   repo_last_push: '2026-07-27'
+  registry_recheck: '2026-09-04'
+  tags: 0
   note: React bindings for the browser loader. Unpublished; manifest version is still 0.0.0.
 - language: javascript
   registry: npm
@@ -56,6 +74,8 @@ packages:
   manifest_version: 0.0.0
   registry_status: 404
   repo_last_push: '2026-07-27'
+  registry_recheck: '2026-09-04'
+  tags: 0
   note: Vue bindings for the browser loader. Unpublished; manifest version is still 0.0.0.
 - language: javascript
   registry: npm
@@ -68,6 +88,8 @@ packages:
   manifest_version: 0.0.0
   registry_status: 404
   repo_last_push: '2026-07-27'
+  registry_recheck: '2026-09-04'
+  tags: 0
   note: Next.js integration for the browser loader. Unpublished; manifest version is still 0.0.0.
 - language: javascript
   registry: npm
@@ -80,6 +102,8 @@ packages:
   manifest_version: 0.1.0
   registry_status: 404
   repo_last_push: '2026-07-27'
+  registry_recheck: '2026-09-04'
+  tags: 0
   note: >-
     Server SDK for Node.js — API client, webhook signature verification, and types. Requires Node >=18.
     Unpublished to npm.
@@ -95,6 +119,8 @@ packages:
   registry_status: 404
   registry_url_probed: https://pypi.org/pypi/shieldlabs/json
   repo_last_push: '2026-07-27'
+  registry_recheck: '2026-09-04'
+  tags: 0
   note: >-
     Server SDK for Python (hatchling, requires-python >=3.8, MIT, no runtime dependencies,
     classifier "Development Status :: 4 - Beta"). Not on PyPI.
@@ -110,6 +136,8 @@ packages:
   registry_status: empty-version-list
   registry_url_probed: https://proxy.golang.org/github.com/!shield!labs-ai/shieldlabs-go/@v/list
   repo_last_push: '2026-07-27'
+  registry_recheck: '2026-09-04'
+  tags: 0
   note: >-
     Server SDK for Go (module github.com/ShieldLabs-ai/shieldlabs-go, go 1.21). The Go module proxy
     returns no versions because the repo carries no semver tag, so `go get` cannot resolve a release.
@@ -125,6 +153,8 @@ packages:
   registry_status: 404
   registry_url_probed: https://repo.packagist.org/p2/shieldlabs/shieldlabs.json
   repo_last_push: '2026-07-27'
+  registry_recheck: '2026-09-04'
+  tags: 0
   note: >-
     Server SDK for PHP (PSR-4 ShieldLabs\, requires php >=8.1 + ext-curl + ext-json, MIT).
     Not registered on Packagist.
@@ -172,7 +202,17 @@ summary:
   - pypi
   - packagist
   - go-modules
+  - rubygems
+  - crates.io
+  - jsdelivr
+  registries_recheck: '2026-09-04'
   tagged_releases: 0
+  repos_with_tags: 0
+  sdk_repos_unchanged_since: '2026-07-27'
+  spec_changed_since: '2026-09-03'
+  sdk_lag_note: >-
+    The published contract changed on 2026-09-02 and 2026-09-03; no SDK repository has a commit after
+    2026-07-27. The client libraries are behind the spec they are generated from.
   distribution_reality: >-
     Source-available on GitHub, installable by nobody through a package manager. The only shipped
     client artifact is the unpinned CDN snippet.

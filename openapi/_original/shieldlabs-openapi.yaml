@@ -14,12 +14,12 @@ info:
       visit. See [Webhooks](/api/webhooks). Contract: schema_version `2026-06-01`
       (`identification.scored` / `webhook.ping`), signature in `X-Shield-Signature`.
     - The **Server API** has two backend hosts:
-      - **History API** (recommended) on `account.shieldlabs.ai/api` — implemented by
-        **Shield.Portal.Admin**. Private API Key (`Authorization: Bearer sec_…`).
+      - **History API** (recommended) on `account.shieldlabs.ai/api`.
+        Private API Key (`Authorization: Bearer sec_…`).
         Envelope `{ data, total }`. See [Server API](/api/server-api).
-      - **Management API** on `api.shieldlabs.ai` — implemented by **Shield.Core**.
+      - **Management API** on `api.shieldlabs.ai`.
         Secret Key in headers (`X-Shield-Domain` + `Authorization: Bearer`).
-        Profile, balance, and alternate billed History path (PascalCase array).
+        Profile and balance (Secret Key). Snapshot history: use History API.
 
     The Risk Score is an integer from 0 to 100. ShieldLabs scores visits; your own
     code decides whether to allow, challenge, review, or block.
@@ -28,19 +28,19 @@ info:
 
 servers:
   - url: https://account.shieldlabs.ai/api
-    description: History API (Shield.Portal.Admin — Private API Key, recommended for snapshot reads)
+    description: History API (Private API Key, recommended for snapshot reads)
   - url: https://api.shieldlabs.ai
-    description: Management API (Shield.Core — Secret Key — profile, balance, billed History)
+    description: Management API (Secret Key — profile and balance)
 
 tags:
   - name: history-api
     description: |
-      Recommended snapshot reads on account.shieldlabs.ai (service: Shield.Portal.Admin).
+      Recommended snapshot reads on account.shieldlabs.ai.
       Authenticated with Private API Key. Response envelope `{ data, total }`.
   - name: management-api
     description: |
-      Profile, balance, and alternate History on api.shieldlabs.ai (service: Shield.Core).
-      Authenticated with Secret Key headers. History returns a PascalCase JSON array.
+      Profile and balance on api.shieldlabs.ai.
+      Authenticated with Secret Key headers. GET /v1/history is deprecated; use History API.
 
 paths:
   /api/v1/history/{search_type}/{value}:
@@ -50,7 +50,7 @@ paths:
       description: |
         Returns stored snapshots that match an identifier, newest first, in a paginated
         `{ data, total }` envelope. Does not consume request balance.
-        Served by Shield.Portal.Admin on account.shieldlabs.ai.
+        Served on account.shieldlabs.ai.
       operationId: searchHistoryAccount
       security:
         - PrivateApiKey: []
@@ -111,12 +111,14 @@ paths:
   /v1/history/{type}/{value}:
     get:
       tags: [management-api]
-      summary: Search history by identifier (Management API)
+      summary: Search history by identifier (deprecated)
+      deprecated: true
       description: |
-        Returns stored snapshots in a PascalCase JSON array, newest first. Each returned
-        row consumes one request from your balance (an empty result still consumes one).
-        Prefer `/api/v1/history/…` on account.shieldlabs.ai for new integrations.
-        Served by Shield.Core on api.shieldlabs.ai.
+        Deprecated. Use `searchHistoryAccount` on account.shieldlabs.ai
+        (`https://account.shieldlabs.ai/api/v1/history`). Sunset: 2027-01-01.
+        Responses include `Deprecation`, `Sunset`, and `Link: rel="successor-version"`
+        pointing at the History API. Still returns stored snapshots in a PascalCase
+        JSON array, newest first. Does not consume request balance. Served on api.shieldlabs.ai.
       operationId: searchHistoryV1
       security:
         - SecretKeyHeader: []
@@ -152,8 +154,6 @@ paths:
           $ref: "#/components/responses/BadRequest"
         "401":
           $ref: "#/components/responses/UnauthorizedEmpty"
-        "402":
-          $ref: "#/components/responses/OutOfRequests"
         "404":
           description: Unsupported identifier type
         "429":
@@ -249,7 +249,6 @@ webhooks:
                       search_bot: false
                       suspicious_paid_click: false
                       javascript_disabled: false
-                      stun_request_seen: true
                       stun_not_checked: false
                     observed_at: "2026-06-26T14:20:42Z"
               ping:
@@ -372,7 +371,7 @@ components:
           description: Stable signal slug (e.g. proxy, vpn, datacenter_ip).
         weight:
           type: integer
-          description: Points contributed to risk_score. Debug entries with weight 0 are omitted.
+          description: Points contributed to risk_score. Entries with weight 0 are omitted.
 
     WebhookTrafficSource:
       type: object
@@ -398,7 +397,7 @@ components:
 
     WebhookDetectionFlags:
       type: object
-      description: Denormalized detection booleans from Shield.Core entity.WebhookDetectionFlags.
+      description: Detection flag booleans on the webhook payload.
       properties:
         vpn:
           type: boolean
@@ -434,14 +433,12 @@ components:
           type: boolean
         javascript_disabled:
           type: boolean
-        stun_request_seen:
-          type: boolean
         stun_not_checked:
           type: boolean
 
     WebhookScoredData:
       type: object
-      description: Payload inside identification.scored (Shield.Core entity.WebhookScoredData).
+      description: Payload inside identification.scored.
       required:
         - request_id
         - visitor_id
@@ -505,7 +502,7 @@ components:
     WebhookEvent:
       type: object
       description: |
-        POST body envelope (Shield.Core entity.WebhookEvent). Signature is NOT in the body —
+        Webhook POST body envelope. Signature is NOT in the body —
         verify the X-Shield-Signature header.
       required: [event_type, schema_version, created_at]
       properties:
@@ -524,7 +521,7 @@ components:
 
     Snapshot:
       type: object
-      description: Snapshot from the Management API History path (PascalCase array element).
+      description: Deprecated Management History array element (PascalCase). Prefer History API snake_case rows.
       properties:
         RequestID:
           type: string
@@ -545,7 +542,7 @@ components:
           type: string
         ConnectionType:
           type: string
-          enum: [direct, mobile, vpn, proxy, tor, privacy_relay, unknown]
+          enum: [direct, mobile, vpn, proxy, tor, privacy_relay, browser_vpn_proxy, unknown]
         WebRtcHIP:
           type: string
         OS:

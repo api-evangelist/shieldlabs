@@ -1,0 +1,26 @@
+{
+  "provider": "shieldlabs",
+  "sources": [
+    "_original/shieldlabs-openapi.yaml"
+  ],
+  "outputs": [
+    "shieldlabs-shieldlabs-api-api-openapi.yml",
+    "shieldlabs-history-api-api-openapi.yml",
+    "shieldlabs-management-api-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "shieldlabs-openapi.yaml: upgraded openapi 3.1.0 -> OpenAPI 3.2.0",
+    "shieldlabs-openapi.yaml: tagged webhooks POST identificationScored -> ShieldLabs API",
+    "shieldlabs-openapi.yaml: declared missing tag: ShieldLabs API"
+  ],
+  "skipped": [
+    "shieldlabs-history-api-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "shieldlabs-management-api-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "shieldlabs-server-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "shieldlabs-shieldlabs-api-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
+}

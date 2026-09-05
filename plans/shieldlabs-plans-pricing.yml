@@ -1,7 +1,8 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: searched
 source: https://shieldlabs.ai/pricing
 docs: https://docs.shieldlabs.ai/billing
+rechecked: '2026-09-04'
 note: >-
   Public, self-serve pricing with no sales gate. Billing is per identification (one visitor check),
   not per seat or per monthly active user. Both a monthly and a yearly rate are published; yearly
@@ -9,6 +10,17 @@ note: >-
   the yearly-billed monthly figure ($79 / $319 / $799 with the yearly per-identification rate) while
   the feature-comparison table and the site llms.txt show the monthly-billed rate ($99 / $399 / $999
   at $0.00396 / $0.00266 / $0.00199). Both are recorded below rather than picking one.
+
+  Re-read 2026-09-04. Prices and included quotas are unchanged, but the Billing page now publishes
+  three things it did not before, all of which are plan-scoped LIMITS rather than prices and all of
+  which are recorded per tier below: how many domains a plan may keep active (1 / 1 / 3 / 5), the
+  per-domain ingest ceiling on the gateway (5 / 5 / 10 / 15 requests per second), and a middle
+  billing frequency — quarterly, at 10% off, between the monthly and yearly rates already recorded.
+  Two facts were CORRECTED against the provider's own current documentation: the Custom-volume
+  threshold is published as "above 1M" identifications per month, not above the Scale tier's 500,000;
+  and Management API History lookups do NOT bill per returned record. The previous metering note said
+  they did, which the provider now contradicts in both its billing page ("Free: history & profile")
+  and its OpenAPI ("Does not consume request balance").
 currency: USD
 billing_unit: identification (one visitor check)
 plan_count: 4
@@ -23,6 +35,8 @@ plans:
   limits:
     data_retention: 12 months
     uptime_sla: null
+    active_domains: 1
+    ingest_rps_per_domain: 5
   features_note: Identical detection stack to the paid tiers, capped at 5,000 one-time identifications.
 - name: Starter
   price_monthly_billed_monthly: 99
@@ -36,6 +50,8 @@ plans:
   limits:
     data_retention: 12 months
     uptime_sla: null
+    active_domains: 1
+    ingest_rps_per_domain: 5
   yearly_saving: 238
 - name: Growth
   price_monthly_billed_monthly: 399
@@ -49,6 +65,8 @@ plans:
   limits:
     data_retention: 12 months
     uptime_sla: null
+    active_domains: 3
+    ingest_rps_per_domain: 10
   yearly_saving: 958
   marketing_label: Most Popular
 - name: Scale
@@ -63,20 +81,47 @@ plans:
   limits:
     data_retention: 12 months
     uptime_sla: 99.9%
+    active_domains: 5
+    ingest_rps_per_domain: 15
   yearly_saving: 2398
 custom:
-  threshold: above 500,000 identifications / month
-  process: contact support for a custom plan
-  note: The only contact-sales path; every published tier is self-serve.
+  name: Custom volume
+  threshold: above 1,000,000 identifications / month
+  price: contact us
+  rate_per_1000: custom
+  process: contact support for a committed-volume quote
+  source: https://docs.shieldlabs.ai/billing
+  note: >-
+    The only contact-sales path; every published tier is self-serve. The threshold is published as
+    "Above 1M" on the Billing page, which leaves the band between Scale's 500,000 and 1,000,000
+    undefined in the provider's own table — recorded as published rather than reconciled.
+billing_frequency:
+- frequency: monthly
+  discount: 0
+- frequency: quarterly
+  discount: 0.10
+- frequency: yearly
+  discount: 0.20
+changeable: any time under Settings > Plans & Requests in the dashboard
 metering:
   billable:
-  - Each visitor check from the snippet counts as one identification.
-  - >-
-    A Management API History lookup on api.shieldlabs.ai bills one request per returned record, with a
-    minimum of one — a zero-row lookup still bills one.
+  - Each scored identification is one request. Its score, signals and webhook come with it.
   free:
-  - Webhook deliveries, including retries.
-  - Dashboard viewing.
-  - Data exports.
-  - Profile and setup calls.
+  - Webhook deliveries.
+  - Dashboard viewing, every chart and breakdown.
+  - CSV and JSON exports.
+  - Management API GET /v1/profile (profile and balance).
   - History API reads on account.shieldlabs.ai.
+  - Management API GET /v1/history (deprecated path) — does not consume request balance.
+  - Requests refused during a domain freeze are not billed.
+  corrections:
+  - field: billable
+    was: >-
+      A Management API History lookup on api.shieldlabs.ai bills one request per returned record,
+      with a minimum of one.
+    now: Not billed at all.
+    evidence: >-
+      https://docs.shieldlabs.ai/billing ("Free: history & profile"), the operation description in
+      openapi/_original/shieldlabs-openapi.yaml ("Does not consume request balance"), and the
+      provider's own DRIFT.md ("do not document per-row billing (code does not debit)").
+    corrected: '2026-09-04'

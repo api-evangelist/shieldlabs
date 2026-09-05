@@ -1,13 +1,26 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: searched
 source: https://docs.shieldlabs.ai/changelog
-derived_from: openapi/shieldlabs-server-api-openapi.yml
+derived_from: openapi/_original/shieldlabs-openapi.yaml
 note: >-
-  ShieldLabs versions its paths (v1) and its event payloads (a dated schema_version), and it keeps a
-  dated changelog. What it does NOT publish is the operational scaffolding around change: there is no
-  status page on any probed host, no formal deprecation policy page, no Sunset/Deprecation header
-  support documented, and no SLA document — the only availability commitment anywhere is a "99.9%
-  SLA" line item on the Scale tier of the pricing table, with no terms behind it.
+  THE DEPRECATION POSTURE CHANGED MATERIALLY SINCE 2026-08-19 AND THIS IS THE HEADLINE OF THE ROUND.
+  On 2026-09-01 the provider marked GET /v1/history on the Management API `deprecated: true` in its
+  public OpenAPI, and on 2026-09-03 it added the sunset date. The operation now names its successor
+  (searchHistoryAccount on account.shieldlabs.ai), carries a dated Sunset of 2027-01-01, and states
+  that live responses emit `Deprecation`, `Sunset` and `Link: rel="successor-version"` headers. That
+  is RFC 8594 behaviour declared in the contract itself, which the previous pass correctly recorded
+  as absent — it did not exist yet.
+
+  What is now published: machine-readable deprecation on the operation, a dated sunset, a named
+  successor, and RFC 8594 response headers. What is STILL absent: a deprecation POLICY page stating
+  how much notice any future deprecation gets, an SLA document, and a status page. The 99.9% figure
+  remains a line item on the Scale tier of the pricing table with no terms, no credit schedule and no
+  measurement definition behind it.
+
+  On the status page specifically — do not re-credit shieldlabs.statuspage.io. It returns 200, but
+  the subdomain is unclaimed and Atlassian serves its own Statuspage marketing page there. Verified
+  again 2026-09-04: the page title is "Real-Time Incident Communication with Statuspage | Atlassian"
+  and the canonical link points at atlassian.com. ShieldLabs operates no status page.
 versioning:
   scheme: uri-path
   current: v1
@@ -25,23 +38,48 @@ event_versioning:
   docs: https://docs.shieldlabs.ai/api/webhooks
 deprecation:
   policy_url: null
-  sunset_header: false
-  deprecation_header: false
   formal_policy: false
+  formal_policy_note: >-
+    There is still no page stating a general deprecation policy — how much notice a future
+    deprecation gets, or what a sunset window will be. What exists is one worked example, executed
+    properly, rather than a rule.
+  machine_readable: true
+  spec_deprecated_flag: true
+  sunset_header: true
+  deprecation_header: true
+  link_successor_version: true
+  rfc8594: true
+  header_evidence: >-
+    "Responses include `Deprecation`, `Sunset`, and `Link: rel=\"successor-version\"` pointing at the
+    History API." — operation description for searchHistoryV1 in the provider's published OpenAPI.
+    Declared in the contract; not independently observed on the wire, because the operation requires
+    a Secret Key we do not hold.
+  header_verification: declared-in-contract-not-wire-observed
   observed_deprecations:
-  - subject: Management API History path (/v1/history/{type}/{value} on api.shieldlabs.ai)
-    status: soft-deprecated
+  - subject: Management API History path (GET /v1/history/{type}/{value} on api.shieldlabs.ai)
+    operation_id: searchHistoryV1
+    status: deprecated
+    deprecated_flag: true
+    sunset_date: '2027-01-01'
+    successor: >-
+      searchHistoryAccount — GET https://account.shieldlabs.ai/api/v1/history/{search_type}/{value}
     statement: >-
-      "Prefer /api/v1/history/… on account.shieldlabs.ai for new integrations." Stated in the
-      OpenAPI operation description; the path remains live and is not scheduled for removal.
-    source: openapi/shieldlabs-server-api-openapi.yml#searchHistoryV1
+      "Deprecated. Use `searchHistoryAccount` on account.shieldlabs.ai
+      (`https://account.shieldlabs.ai/api/v1/history`). Sunset: 2027-01-01."
+    announced: '2026-09-01'
+    sunset_documented: '2026-09-03'
+    notice_period_days: 487
+    source: openapi/_original/shieldlabs-openapi.yaml#searchHistoryV1
+    upstream: https://docs.shieldlabs.ai/references/openapi.yaml
+    changed_since: >-
+      Recorded as "soft-deprecated, not scheduled for removal" on 2026-08-19, which was accurate
+      then. It is now a machine-readable deprecation with a dated sunset.
   - subject: Management API legacy path authentication
     status: deprecated with a dated sunset
     sunset_date: '2027-01-01'
     statement: >-
       "legacy path auth deprecated (sunset 2027-01-01)" — published in the README of the provider's
-      own public OpenAPI repository. This is the only dated sunset commitment ShieldLabs publishes,
-      and it does not appear in the docs site or in the spec itself.
+      own public OpenAPI repository. Not carried into the docs site or the spec.
     source: https://github.com/ShieldLabs-ai/shieldlabs-openapi
 sla:
   url: null
@@ -63,16 +101,31 @@ status_page_probes:
   status: 404
 - url: https://shieldlabs.statuspage.io
   status: 200
+  rechecked: '2026-09-04'
   note: >-
     FALSE POSITIVE, recorded so a later run does not re-credit it — the subdomain is unclaimed and
-    Atlassian serves its own Statuspage marketing page there (title "Real-Time Incident Communication
-    with Statuspage | Atlassian"). /api/v2/summary.json redirects to www.statuspage.io. This is not a
-    ShieldLabs status page.
+    Atlassian serves its own Statuspage marketing page there. Re-verified 2026-09-04: title is
+    "Real-Time Incident Communication with Statuspage | Atlassian" and the canonical link is
+    atlassian.com/software/statuspage. This is not a ShieldLabs status page and NO StatusPage pointer
+    is emitted in apis.yml.
+- url: https://trust.shieldlabs.ai
+  status: 000
+  note: DNS does not resolve. No trust center exists.
 data_retention:
   identification_records: up to 12 months
   scope: all plans including Free
   customer_controls: [export, earlier deletion on request]
   residency: single region, no per-customer region selection
   source: https://docs.shieldlabs.ai/privacy
-deprecated_operations: []
+deprecated_operations:
+- operation_id: searchHistoryV1
+  method: get
+  path: /v1/history/{type}/{value}
+  host: api.shieldlabs.ai
+  spec: openapi/shieldlabs-management-api-api-openapi.yml
+  sunset: '2027-01-01'
+  successor_operation_id: searchHistoryAccount
+  successor_url: https://account.shieldlabs.ai/api/v1/history/{search_type}/{value}
+deprecated_operation_count: 1
+operation_count: 3
 changelog: https://docs.shieldlabs.ai/changelog

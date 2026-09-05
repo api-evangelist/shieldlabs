@@ -1,12 +1,24 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: searched
-source: openapi/shieldlabs-server-api-openapi.yml
+source: openapi/_original/shieldlabs-openapi.yaml
 docs: https://docs.shieldlabs.ai/setup/keys
 note: >-
   Derived from the provider's OpenAPI securitySchemes, then upgraded from the published keys reference.
   ShieldLabs issues four distinct credentials per registered domain; only two of them appear in the
   OpenAPI (the two Server API bearer schemes). The public key and the per-endpoint webhook signing
   secret are documented but are not OpenAPI security schemes, so they are recorded separately below.
+
+  Re-derived 2026-09-04 from a re-harvested spec. The two schemes, their names, their transport and
+  their per-domain scoping are unchanged. One thing was added: the provider's own OpenAPI repository
+  README states that LEGACY PATH AUTHENTICATION on the Management API is deprecated with a sunset of
+  2027-01-01 — the same date as the deprecated History operation. That deprecation is published only
+  in the repository README; it does not appear on the docs site or in the spec, so a consumer reading
+  the documentation alone will not see it. Recorded below.
+
+  There is still no OAuth and no OpenID Connect on any surface, which is why this repo carries no
+  scopes/ artifact: with two static bearer credentials and no authorization server there is no scope
+  surface to record. /.well-known/oauth-authorization-server and /.well-known/oauth-protected-resource
+  return 404 on all eight hosts.
 summary:
   types:
   - http
@@ -26,7 +38,7 @@ schemes:
     does not consume request balance.
   applies_to: https://account.shieldlabs.ai/api
   sources:
-  - openapi/shieldlabs-server-api-openapi.yml
+  - openapi/_original/shieldlabs-openapi.yaml
 - name: SecretKeyHeader
   type: http
   scheme: bearer
@@ -40,7 +52,7 @@ schemes:
     description: The registered domain the credential is scoped to.
   applies_to: https://api.shieldlabs.ai
   sources:
-  - openapi/shieldlabs-server-api-openapi.yml
+  - openapi/_original/shieldlabs-openapi.yaml
 non_api_credentials:
 - name: Public Key
   format: 32-char hex
@@ -58,6 +70,22 @@ non_api_credentials:
     HMAC-SHA256 key used to verify the `X-Shield-Signature: sha256=<hex>` header over the raw
     webhook body. Not the Secret Key — a separate secret per endpoint.
   docs: https://docs.shieldlabs.ai/setup/webhooks
+deprecations:
+- subject: Management API legacy path authentication
+  status: deprecated
+  sunset: '2027-01-01'
+  statement: 'legacy path auth deprecated (sunset 2027-01-01)'
+  published_only_in: https://github.com/ShieldLabs-ai/shieldlabs-openapi (README)
+  not_in: [https://docs.shieldlabs.ai/setup/keys, the OpenAPI spec]
+  cross_reference: lifecycle/shieldlabs-lifecycle.yml
+oauth:
+  supported: false
+  openid_connect: false
+  discovery_probes:
+  - {path: /.well-known/oauth-authorization-server, hosts_probed: 8, result: 404 on all}
+  - {path: /.well-known/oauth-protected-resource, hosts_probed: 8, result: 404 on all}
+  - {path: /.well-known/openid-configuration, hosts_probed: 8, result: 404 on all}
+  scopes_artifact: not applicable — no authorization server, no scope surface
 key_scoping:
   per_domain: true
   rotation: >-

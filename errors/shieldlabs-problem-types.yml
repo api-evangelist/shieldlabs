@@ -1,7 +1,7 @@
-generated: '2026-08-19'
+generated: '2026-09-04'
 method: searched
 source: https://docs.shieldlabs.ai/errors
-derived_from: openapi/shieldlabs-server-api-openapi.yml
+derived_from: openapi/_original/shieldlabs-openapi.yaml
 format: none
 note: >-
   ShieldLabs does NOT use RFC 9457 problem+json, and does not use one error envelope at all. The docs
@@ -10,6 +10,21 @@ note: >-
   ingest and network-check gateways, an EMPTY body from the Server API on 401 and 402, and a BARE JSON
   STRING (e.g. "request_id is not supported") from the Server API on 400 and 404. There are no
   machine-readable error codes anywhere: the status code is the only stable, parseable signal.
+
+  THE PROVIDER'S TWO PAGES DISAGREE ABOUT 429, AND WE CAN SETTLE IT. The Errors page states that 429
+  and 503 come from "REST ingest and network-check gateways only, not the Server API". The Rate
+  limits page, rewritten in August 2026, states the opposite twice: the Management API "applies the
+  same per-IP limit (15/min, 10-minute ban) and concurrency cap (512 in-flight) independently", and
+  the History API has its own soft cap of 15 requests/second per site returning 429. The rate-limits
+  page is the correct one: while probing /.well-known paths on 2026-09-04 we received
+  `429 {"error":"too many requests"}` directly from api.shieldlabs.ai and rest.shieldlabs.ai, with no
+  credentials and no ingest traffic. A client that trusts the Errors page will not handle a 429 on
+  the Server API, and will get one.
+
+  Three details in this file were corrected on 2026-09-04 against the provider's own current
+  documentation — the per-IP threshold (15/min, not 20), the ban length (10 minutes, not one hour),
+  and per-row billing on the deprecated Management History path, which the provider now says does not
+  happen at all.
 envelopes:
 - surface: REST ingest + network-check gateways (rest.shieldlabs.ai) and Management API
   media_type: application/json
@@ -32,38 +47,59 @@ problems:
     Server API only. A malformed value, for example a non-UUID where a UUID is required. Body is a
     bare JSON string.
   remediation: Fix the request.
-  source_operation: openapi/shieldlabs-server-api-openapi.yml#searchHistoryV1
+  source_operation: openapi/_original/shieldlabs-openapi.yaml#searchHistoryV1
 - status: 401
   title: Bad credentials or disabled domain
   detail: >-
     Empty body. Check the Server API credential (Authorization: Bearer) or ?publicKey= on the
     snippet, and that the domain is enabled.
   remediation: Verify the key and the domain status in the dashboard.
-  source_operation: openapi/shieldlabs-server-api-openapi.yml#searchHistoryAccount
+  source_operation: openapi/_original/shieldlabs-openapi.yaml#searchHistoryAccount
 - status: 402
   title: Out of requests
   detail: >-
-    Empty body. The domain's request balance is exhausted. The Management API History path bills one
-    request per returned row (a zero-row lookup still bills one); History reads on
-    account.shieldlabs.ai are free.
+    Empty body. The domain's request balance is exhausted. Raised by NEW identifications (snippet
+    ingest). History API and profile reads do not consume balance and do not return 402. The
+    deprecated Management History path no longer carries a 402 response in the spec at all — it was
+    removed on 2026-09-01 along with the per-row billing claim.
   remediation: Top up or upgrade the plan.
-  source_operation: openapi/shieldlabs-server-api-openapi.yml#searchHistoryV1
+  changed_since: >-
+    Previously recorded as "the Management API History path bills one request per returned row (a
+    zero-row lookup still bills one)". The provider removed that behaviour and the 402 response from
+    the operation; do not reinstate it.
+  source_operation: openapi/_original/shieldlabs-openapi.yaml#searchHistoryV1
 - status: 404
   title: Unsupported history type
   detail: >-
     Server API only. Body is a bare JSON string. A SUPPORTED type that matches no records returns 200
-    with an empty array — and still bills one request — not 404.
+    with an empty array, not 404.
   supported_types: [ip, user_hid, visitor_id, request_id, device_id, session_id, cookie_id]
   remediation: Use a supported identifier type.
-  source_operation: openapi/shieldlabs-server-api-openapi.yml#searchHistoryV1
+  note: >-
+    A supported type matching no records returns 200 with an empty list, not 404 — and, since
+    2026-09-01, does not bill.
+  source_operation: openapi/_original/shieldlabs-openapi.yaml#searchHistoryV1
 - status: 429
   title: Rate-limited
   detail: >-
-    Ingest and network-check gateways only, not the Server API. Body is {"error": "too many
-    requests"}. Crossing 20 requests/minute from one IP bans that IP for 1 hour.
-  remediation: Back off; do not proxy snippet traffic through one server IP.
+    Body is {"error": "too many requests"}. Crossing 15 requests/minute from one IP bans that IP for
+    10 minutes. Also raised — WITHOUT a ban — by the per-domain plan ingest cap, the 40/s shared
+    ingest cap, a domain freeze, and the History API's 15 req/s per-site soft cap. All five are the
+    same 429 with the same body; nothing in the response distinguishes them.
+  surfaces:
+  - rest.shieldlabs.ai (ingest + network check)
+  - api.shieldlabs.ai (Management API, per-IP limit applied independently)
+  - account.shieldlabs.ai (History API soft cap)
+  docs_contradiction: >-
+    The Errors page says 429 is raised by "REST ingest and network-check gateways only, not the
+    Server API". This is contradicted by the Rate limits page and by direct observation — a 429 with
+    this exact body was returned by api.shieldlabs.ai and rest.shieldlabs.ai to an unauthenticated
+    probe on 2026-09-04. Handle 429 on every surface.
+  remediation: >-
+    Back off; do not proxy snippet traffic through one server IP. There is no Retry-After header, so
+    a client cannot tell a one-second soft reject from a ten-minute ban and must assume the longer.
   cross_reference: rate-limits/shieldlabs-rate-limits.yml
-  source_operation: openapi/shieldlabs-server-api-openapi.yml#searchHistoryV1
+  source_operation: openapi/_original/shieldlabs-openapi.yaml#searchHistoryV1
 - status: 500
   title: Internal error
   detail: Transient.
@@ -71,17 +107,34 @@ problems:
 - status: 503
   title: Server busy
   detail: >-
-    Ingest and network-check gateways only. Body is {"error": "server is busy"}. The 512-connection
-    concurrency cap was hit.
+    Body is {"error": "server is busy"}. The 512-connection concurrency cap was hit. The Errors page
+    scopes this to the ingest gateways, but the Rate limits page states the Management API applies
+    the same 512 in-flight cap independently.
   remediation: Retry with a short jittered backoff.
-  source_operation: openapi/shieldlabs-server-api-openapi.yml#searchHistoryV1
+  source_operation: openapi/_original/shieldlabs-openapi.yaml#searchHistoryV1
 traps:
 - name: 999 rate-limit sentinel
   detail: >-
     A rate-limit ban writes a score of 999 to the snapshot. It is not capped to 100 and can reach a
     webhook handler or a History row. Guard for score > 100 before reading the risk band, otherwise a
     gateway ban is read as a maximum-risk visitor.
-- name: empty 200 still bills
+- name: one 429, five causes, no header to tell them apart
   detail: >-
-    A supported identifier type with no matching records returns 200 with an empty result on the
-    Management API History path and still consumes one request from the balance.
+    Five different limits return an identical 429 with an identical body. One of them (the per-IP
+    limit) starts a sticky ten-minute ban; the other four clear in about a second. No Retry-After,
+    no RateLimit-* header, and no distinguishing body field is published, so a client that backs off
+    for a second on a ban keeps hammering a banned IP, and a client that backs off for ten minutes on
+    a soft reject stalls needlessly.
+  cross_reference: rate-limits/shieldlabs-rate-limits.yml
+- name: the Errors page understates where 429 and 503 occur
+  detail: >-
+    It scopes both to the ingest gateways. Both occur on the Server API hosts as well, per the Rate
+    limits page and per direct observation on 2026-09-04.
+retired_traps:
+- name: empty 200 still bills
+  retired: '2026-09-04'
+  reason: >-
+    Was true when recorded on 2026-08-19: a zero-row lookup on the Management History path billed one
+    request. The provider removed per-row billing from that path on 2026-09-01 and states in its own
+    DRIFT.md that "code does not debit". Recorded as retired rather than deleted so the change is
+    visible.
