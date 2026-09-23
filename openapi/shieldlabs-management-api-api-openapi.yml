@@ -2,7 +2,9 @@ openapi: 3.2.0
 info:
   title: ShieldLabs Management API
   version: '1.2'
-  description: "The ShieldLabs API surfaces visitor identification, anonymity detection, and\nabuse and fraud prevention for your application.\n\nThere are three surfaces:\n\n- The **JS snippet** posts collected signals to `rest.shieldlabs.ai` automatically.\n  You do not call this endpoint yourself. See [Install the snippet](/setup/snippet).\n- **Webhooks** deliver the Risk Score and signals to your server shortly after a\n  visit. See [Webhooks](/api/webhooks). Contract: schema_version `2026-06-01`\n  (`identification.scored` / `webhook.ping`), signature in `X-Shield-Signature`.\n- The **Server API** has two backend hosts:\n  - **History API** (recommended) on `account.shieldlabs.ai/api`.\n    Private API Key (`Authorization: Bearer sec_…`).\n    Envelope `{ data, total }`. See [Server API](/api/server-api).\n  - **Management API** on `api.shieldlabs.ai`.\n    Secret Key in headers (`X-Shield-Domain` + `Authorization: Bearer`).\n    Profile and balance (Secret Key). Snapshot history: use History API.\n\nThe Risk Score is an integer from 0 to 100. ShieldLabs scores visits; your own\ncode decides whether to allow, challenge, review, or block.\n"
+  description: 'The ShieldLabs API surfaces visitor identification, anonymity detection, and
+
+    abuse and fraud prevention for your application.'
   contact:
     email: support@shieldlabs.ai
 servers:
@@ -11,21 +13,17 @@ servers:
 - url: https://api.shieldlabs.ai
   description: Management API (Secret Key — profile and balance)
 tags:
-- name: management-api
+- name: Management API
   description: 'Profile and balance on api.shieldlabs.ai.
 
-    Authenticated with Secret Key headers. GET /v1/history is deprecated; use History API.
-
-    '
+    Authenticated with Secret Key headers. GET /v1/history is deprecated; use History API.'
 paths:
   /v1/profile:
     get:
       tags:
-      - management-api
+      - Management API
       summary: Get domain profile
-      description: 'Returns the profile for a domain: remaining request balance and masked keys. Free (0 requests).
-
-        '
+      description: 'Returns the profile for a domain: remaining request balance and masked keys. Free (0 requests).'
       operationId: getProfileV1
       security:
       - SecretKeyHeader: []
@@ -41,7 +39,7 @@ paths:
   /v1/history/{type}/{value}:
     get:
       tags:
-      - management-api
+      - Management API
       summary: Search history by identifier (deprecated)
       deprecated: true
       description: 'Deprecated. Use `searchHistoryAccount` on account.shieldlabs.ai
@@ -52,9 +50,7 @@ paths:
 
         pointing at the History API. Still returns stored snapshots in a PascalCase
 
-        JSON array, newest first. Does not consume request balance. Served on api.shieldlabs.ai.
-
-        '
+        JSON array, newest first. Does not consume request balance. Served on api.shieldlabs.ai.'
       operationId: searchHistoryV1
       security:
       - SecretKeyHeader: []
@@ -105,6 +101,14 @@ paths:
           $ref: '#/components/responses/ServiceUnavailable'
 components:
   schemas:
+    ScoreDetail:
+      type: object
+      description: Signal row on Management API Snapshot.Details (PascalCase). Not used in webhooks.
+      properties:
+        Value:
+          type: integer
+        Description:
+          type: string
     Error:
       type: object
       properties:
@@ -113,6 +117,20 @@ components:
           examples:
           - too many requests
           - invalid api key
+    Profile:
+      type: object
+      properties:
+        Domain:
+          type: string
+        Weight:
+          type: integer
+        PublicKey:
+          type: string
+        Secret:
+          type: string
+        CreatedAt:
+          type: string
+          format: date-time
     Snapshot:
       type: object
       description: Deprecated Management History array element (PascalCase). Prefer History API snake_case rows.
@@ -166,28 +184,6 @@ components:
         LastRequestTime:
           type: string
           format: date-time
-    Profile:
-      type: object
-      properties:
-        Domain:
-          type: string
-        Weight:
-          type: integer
-        PublicKey:
-          type: string
-        Secret:
-          type: string
-        CreatedAt:
-          type: string
-          format: date-time
-    ScoreDetail:
-      type: object
-      description: Signal row on Management API Snapshot.Details (PascalCase). Not used in webhooks.
-      properties:
-        Value:
-          type: integer
-        Description:
-          type: string
   responses:
     ServiceUnavailable:
       description: Gateway concurrency cap reached
@@ -195,16 +191,16 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
+    UnauthorizedEmpty:
+      description: Missing or invalid credentials, or the domain is disabled (empty body)
+    BadRequest:
+      description: Invalid parameters (bare JSON string on Management API)
     TooManyRequests:
       description: Per-IP rate limit exceeded
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    BadRequest:
-      description: Invalid parameters (bare JSON string on Management API)
-    UnauthorizedEmpty:
-      description: Missing or invalid credentials, or the domain is disabled (empty body)
   securitySchemes:
     PrivateApiKey:
       type: http

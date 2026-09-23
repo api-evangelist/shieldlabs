@@ -2,7 +2,9 @@ openapi: 3.2.0
 info:
   title: ShieldLabs History API
   version: '1.2'
-  description: "The ShieldLabs API surfaces visitor identification, anonymity detection, and\nabuse and fraud prevention for your application.\n\nThere are three surfaces:\n\n- The **JS snippet** posts collected signals to `rest.shieldlabs.ai` automatically.\n  You do not call this endpoint yourself. See [Install the snippet](/setup/snippet).\n- **Webhooks** deliver the Risk Score and signals to your server shortly after a\n  visit. See [Webhooks](/api/webhooks). Contract: schema_version `2026-06-01`\n  (`identification.scored` / `webhook.ping`), signature in `X-Shield-Signature`.\n- The **Server API** has two backend hosts:\n  - **History API** (recommended) on `account.shieldlabs.ai/api`.\n    Private API Key (`Authorization: Bearer sec_…`).\n    Envelope `{ data, total }`. See [Server API](/api/server-api).\n  - **Management API** on `api.shieldlabs.ai`.\n    Secret Key in headers (`X-Shield-Domain` + `Authorization: Bearer`).\n    Profile and balance (Secret Key). Snapshot history: use History API.\n\nThe Risk Score is an integer from 0 to 100. ShieldLabs scores visits; your own\ncode decides whether to allow, challenge, review, or block.\n"
+  description: 'The ShieldLabs API surfaces visitor identification, anonymity detection, and
+
+    abuse and fraud prevention for your application.'
   contact:
     email: support@shieldlabs.ai
 servers:
@@ -14,9 +16,7 @@ tags:
 - name: history-api
   description: 'Recommended snapshot reads on account.shieldlabs.ai.
 
-    Authenticated with Private API Key. Response envelope `{ data, total }`.
-
-    '
+    Authenticated with Private API Key. Response envelope `{ data, total }`.'
 paths:
   /api/v1/history/{search_type}/{value}:
     get:
@@ -27,9 +27,7 @@ paths:
 
         `{ data, total }` envelope. Does not consume request balance.
 
-        Served on account.shieldlabs.ai.
-
-        '
+        Served on account.shieldlabs.ai.'
       operationId: searchHistoryAccount
       security:
       - PrivateApiKey: []
@@ -104,14 +102,6 @@ components:
           description: JSON string of signal objects with Value and Description fields.
         created_at:
           type: string
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          examples:
-          - too many requests
-          - invalid api key
     HistoryEnvelope:
       type: object
       properties:
@@ -121,6 +111,14 @@ components:
             $ref: '#/components/schemas/AccountSnapshot'
         total:
           type: integer
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          examples:
+          - too many requests
+          - invalid api key
   responses:
     UnauthorizedJson:
       description: Missing or invalid Private API Key
