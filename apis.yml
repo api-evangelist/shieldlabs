@@ -49,7 +49,7 @@ created: '2026-08-19'
 modified: '2026-09-16'
 specificationVersion: '0.21'
 tags:
-- Fraud Detection
+- Fraud Prevention
 - Abuse Prevention
 - Visitor Identification
 - Device Fingerprinting
@@ -59,8 +59,8 @@ tags:
 - Identity
 - Security
 - Webhook
-- Anti-Fraud
 - traffic-quality
+- A2A
 tags_raw:
 - fraud-detection
 - abuse-prevention
@@ -74,6 +74,9 @@ tags_raw:
 - webhooks
 - anti-fraud
 - traffic-quality
+- A2A
+- Fraud Detection
+- Anti-Fraud
 apis:
 - aid: shieldlabs:shieldlabs-history-api-api
   name: ShieldLabs History API
@@ -388,3 +391,10 @@ x-evidence:
     lacks. The docs copy is treated as canonical because the provider's own DRIFT.md names it upstream
     and calls the repository a mirror — which matters, because that same repository's README calls itself
     the "source of truth for generating the client SDKs".
+x-a2a:
+  verified: true
+  probed: '2026-09-26'
+  url: "https://docs.shieldlabs.ai/.well-known/agent-card.json"
+  grade: "conformant"
+  protocol_version: "0.3"
+  control: 404

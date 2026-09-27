@@ -74,6 +74,14 @@ paths:
           $ref: '#/components/responses/UnauthorizedJson'
 components:
   schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          examples:
+          - too many requests
+          - invalid api key
     AccountSnapshot:
       type: object
       description: Snapshot row from the History API (snake_case).
@@ -111,14 +119,6 @@ components:
             $ref: '#/components/schemas/AccountSnapshot'
         total:
           type: integer
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          examples:
-          - too many requests
-          - invalid api key
   responses:
     UnauthorizedJson:
       description: Missing or invalid Private API Key

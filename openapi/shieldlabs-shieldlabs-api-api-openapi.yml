@@ -132,25 +132,6 @@ webhooks:
       - ShieldLabs API
 components:
   schemas:
-    WebhookIPAddress:
-      type: object
-      properties:
-        ip:
-          type: string
-        country:
-          type: string
-    WebhookSignal:
-      type: object
-      required:
-      - name
-      - weight
-      properties:
-        name:
-          type: string
-          description: Stable signal slug (e.g. proxy, vpn, datacenter_ip).
-        weight:
-          type: integer
-          description: Points contributed to risk_score. Entries with weight 0 are omitted.
     WebhookDetectionFlags:
       type: object
       description: Detection flag booleans on the webhook payload.
@@ -191,6 +172,60 @@ components:
           type: boolean
         stun_not_checked:
           type: boolean
+    WebhookIPAddress:
+      type: object
+      properties:
+        ip:
+          type: string
+        country:
+          type: string
+    WebhookEvent:
+      type: object
+      description: 'Webhook POST body envelope. Signature is NOT in the body —
+
+        verify the X-Shield-Signature header.
+
+        '
+      required:
+      - event_type
+      - schema_version
+      - created_at
+      properties:
+        event_type:
+          type: string
+          enum:
+          - identification.scored
+          - webhook.ping
+        schema_version:
+          type: string
+          const: '2026-06-01'
+        created_at:
+          type: string
+          format: date-time
+        data:
+          $ref: '#/components/schemas/WebhookScoredData'
+          description: Present for identification.scored; omitted for webhook.ping.
+    WebhookTrafficSource:
+      type: object
+      properties:
+        channel:
+          type: string
+        referrer_domain:
+          type: string
+        landing_url:
+          type: string
+        click_id_type:
+          type: string
+        utm_source:
+          type: string
+        utm_medium:
+          type: string
+        utm_campaign:
+          type: string
+        utm_content:
+          type: string
+        utm_term:
+          type: string
     WebhookScoredData:
       type: object
       description: Payload inside identification.scored.
@@ -263,53 +298,18 @@ components:
         observed_at:
           type: string
           format: date-time
-    WebhookEvent:
+    WebhookSignal:
       type: object
-      description: 'Webhook POST body envelope. Signature is NOT in the body —
-
-        verify the X-Shield-Signature header.
-
-        '
       required:
-      - event_type
-      - schema_version
-      - created_at
+      - name
+      - weight
       properties:
-        event_type:
+        name:
           type: string
-          enum:
-          - identification.scored
-          - webhook.ping
-        schema_version:
-          type: string
-          const: '2026-06-01'
-        created_at:
-          type: string
-          format: date-time
-        data:
-          $ref: '#/components/schemas/WebhookScoredData'
-          description: Present for identification.scored; omitted for webhook.ping.
-    WebhookTrafficSource:
-      type: object
-      properties:
-        channel:
-          type: string
-        referrer_domain:
-          type: string
-        landing_url:
-          type: string
-        click_id_type:
-          type: string
-        utm_source:
-          type: string
-        utm_medium:
-          type: string
-        utm_campaign:
-          type: string
-        utm_content:
-          type: string
-        utm_term:
-          type: string
+          description: Stable signal slug (e.g. proxy, vpn, datacenter_ip).
+        weight:
+          type: integer
+          description: Points contributed to risk_score. Entries with weight 0 are omitted.
   securitySchemes:
     PrivateApiKey:
       type: http
