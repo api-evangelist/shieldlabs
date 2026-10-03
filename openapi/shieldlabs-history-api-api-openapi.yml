@@ -73,6 +73,13 @@ paths:
         '401':
           $ref: '#/components/responses/UnauthorizedJson'
 components:
+  responses:
+    UnauthorizedJson:
+      description: Missing or invalid Private API Key
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
     Error:
       type: object
@@ -119,13 +126,6 @@ components:
             $ref: '#/components/schemas/AccountSnapshot'
         total:
           type: integer
-  responses:
-    UnauthorizedJson:
-      description: Missing or invalid Private API Key
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
   securitySchemes:
     PrivateApiKey:
       type: http

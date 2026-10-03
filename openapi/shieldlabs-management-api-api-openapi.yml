@@ -101,22 +101,6 @@ paths:
           $ref: '#/components/responses/ServiceUnavailable'
 components:
   schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-          examples:
-          - too many requests
-          - invalid api key
-    ScoreDetail:
-      type: object
-      description: Signal row on Management API Snapshot.Details (PascalCase). Not used in webhooks.
-      properties:
-        Value:
-          type: integer
-        Description:
-          type: string
     Profile:
       type: object
       properties:
@@ -184,23 +168,39 @@ components:
         LastRequestTime:
           type: string
           format: date-time
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          examples:
+          - too many requests
+          - invalid api key
+    ScoreDetail:
+      type: object
+      description: Signal row on Management API Snapshot.Details (PascalCase). Not used in webhooks.
+      properties:
+        Value:
+          type: integer
+        Description:
+          type: string
   responses:
-    ServiceUnavailable:
-      description: Gateway concurrency cap reached
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
     TooManyRequests:
       description: Per-IP rate limit exceeded
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/Error'
-    UnauthorizedEmpty:
-      description: Missing or invalid credentials, or the domain is disabled (empty body)
     BadRequest:
       description: Invalid parameters (bare JSON string on Management API)
+    ServiceUnavailable:
+      description: Gateway concurrency cap reached
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnauthorizedEmpty:
+      description: Missing or invalid credentials, or the domain is disabled (empty body)
   securitySchemes:
     PrivateApiKey:
       type: http
