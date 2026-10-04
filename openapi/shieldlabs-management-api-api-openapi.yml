@@ -100,21 +100,24 @@ paths:
         '503':
           $ref: '#/components/responses/ServiceUnavailable'
 components:
+  responses:
+    ServiceUnavailable:
+      description: Gateway concurrency cap reached
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequest:
+      description: Invalid parameters (bare JSON string on Management API)
+    TooManyRequests:
+      description: Per-IP rate limit exceeded
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    UnauthorizedEmpty:
+      description: Missing or invalid credentials, or the domain is disabled (empty body)
   schemas:
-    Profile:
-      type: object
-      properties:
-        Domain:
-          type: string
-        Weight:
-          type: integer
-        PublicKey:
-          type: string
-        Secret:
-          type: string
-        CreatedAt:
-          type: string
-          format: date-time
     Snapshot:
       type: object
       description: Deprecated Management History array element (PascalCase). Prefer History API snake_case rows.
@@ -168,6 +171,20 @@ components:
         LastRequestTime:
           type: string
           format: date-time
+    Profile:
+      type: object
+      properties:
+        Domain:
+          type: string
+        Weight:
+          type: integer
+        PublicKey:
+          type: string
+        Secret:
+          type: string
+        CreatedAt:
+          type: string
+          format: date-time
     Error:
       type: object
       properties:
@@ -184,23 +201,6 @@ components:
           type: integer
         Description:
           type: string
-  responses:
-    TooManyRequests:
-      description: Per-IP rate limit exceeded
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    BadRequest:
-      description: Invalid parameters (bare JSON string on Management API)
-    ServiceUnavailable:
-      description: Gateway concurrency cap reached
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Error'
-    UnauthorizedEmpty:
-      description: Missing or invalid credentials, or the domain is disabled (empty body)
   securitySchemes:
     PrivateApiKey:
       type: http

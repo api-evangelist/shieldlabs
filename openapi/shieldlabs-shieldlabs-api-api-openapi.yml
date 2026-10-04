@@ -132,6 +132,72 @@ webhooks:
       - ShieldLabs API
 components:
   schemas:
+    WebhookDetectionFlags:
+      type: object
+      description: Detection flag booleans on the webhook payload.
+      properties:
+        vpn:
+          type: boolean
+        privacy_relay:
+          type: boolean
+        browser_vpn_proxy:
+          type: boolean
+        tor:
+          type: boolean
+        proxy:
+          type: boolean
+        datacenter_ip:
+          type: boolean
+        abuser:
+          type: boolean
+        os_mismatch:
+          type: boolean
+        os_not_detected:
+          type: boolean
+        timezone_mismatch:
+          type: boolean
+        anti_detect_browser:
+          type: boolean
+        browser_automation:
+          type: boolean
+        ip_mismatch:
+          type: boolean
+        incognito:
+          type: boolean
+        search_bot:
+          type: boolean
+        suspicious_paid_click:
+          type: boolean
+        javascript_disabled:
+          type: boolean
+        stun_not_checked:
+          type: boolean
+    WebhookEvent:
+      type: object
+      description: 'Webhook POST body envelope. Signature is NOT in the body —
+
+        verify the X-Shield-Signature header.
+
+        '
+      required:
+      - event_type
+      - schema_version
+      - created_at
+      properties:
+        event_type:
+          type: string
+          enum:
+          - identification.scored
+          - webhook.ping
+        schema_version:
+          type: string
+          const: '2026-06-01'
+        created_at:
+          type: string
+          format: date-time
+        data:
+          $ref: '#/components/schemas/WebhookScoredData'
+          description: Present for identification.scored; omitted for webhook.ping.
     WebhookScoredData:
       type: object
       description: Payload inside identification.scored.
@@ -204,79 +270,6 @@ components:
         observed_at:
           type: string
           format: date-time
-    WebhookEvent:
-      type: object
-      description: 'Webhook POST body envelope. Signature is NOT in the body —
-
-        verify the X-Shield-Signature header.
-
-        '
-      required:
-      - event_type
-      - schema_version
-      - created_at
-      properties:
-        event_type:
-          type: string
-          enum:
-          - identification.scored
-          - webhook.ping
-        schema_version:
-          type: string
-          const: '2026-06-01'
-        created_at:
-          type: string
-          format: date-time
-        data:
-          $ref: '#/components/schemas/WebhookScoredData'
-          description: Present for identification.scored; omitted for webhook.ping.
-    WebhookDetectionFlags:
-      type: object
-      description: Detection flag booleans on the webhook payload.
-      properties:
-        vpn:
-          type: boolean
-        privacy_relay:
-          type: boolean
-        browser_vpn_proxy:
-          type: boolean
-        tor:
-          type: boolean
-        proxy:
-          type: boolean
-        datacenter_ip:
-          type: boolean
-        abuser:
-          type: boolean
-        os_mismatch:
-          type: boolean
-        os_not_detected:
-          type: boolean
-        timezone_mismatch:
-          type: boolean
-        anti_detect_browser:
-          type: boolean
-        browser_automation:
-          type: boolean
-        ip_mismatch:
-          type: boolean
-        incognito:
-          type: boolean
-        search_bot:
-          type: boolean
-        suspicious_paid_click:
-          type: boolean
-        javascript_disabled:
-          type: boolean
-        stun_not_checked:
-          type: boolean
-    WebhookIPAddress:
-      type: object
-      properties:
-        ip:
-          type: string
-        country:
-          type: string
     WebhookSignal:
       type: object
       required:
@@ -289,6 +282,13 @@ components:
         weight:
           type: integer
           description: Points contributed to risk_score. Entries with weight 0 are omitted.
+    WebhookIPAddress:
+      type: object
+      properties:
+        ip:
+          type: string
+        country:
+          type: string
     WebhookTrafficSource:
       type: object
       properties:
