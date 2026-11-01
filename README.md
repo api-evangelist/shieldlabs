@@ -1,4 +1,4 @@
-# shieldlabs
+# ShieldLabs
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -64,6 +64,143 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Anonymous visitor identification and fraud-prevention platform. A browser ES-module snippet collects 100+ device and network signals and returns six persistent identifiers plus an explainable 0-100 Risk Score; the customer's own code makes the allow/challenge/block decision. Signed at-most-once webhooks and two server-side REST surfaces, described by a public OpenAPI 3.1 specification.
+Anonymous visitor identification and fraud-prevention platform. A browser ES-module snippet loaded from cdn.shieldlabs.ai collects 100+ device and network signals and returns six persistent identifiers (DeviceID, VisitorID, CookieID, SessionID, RequestID and a caller-supplied hashed UserHID) plus an explainable 0-100 Risk Score built from weighted anonymity signals — VPN, proxy, Tor, privacy relay, datacenter, IP reputation, anti-detect browser, geolocation spoofing, OS mismatch, incognito, browser automation and suspicious paid clicks. ShieldLabs deliberately makes no allow/challenge/block decision: it returns the score and the signals behind it, and the customer's own code owns the verdict. Delivery is a signed at-most-once webhook (identification.scored, HMAC-SHA256 in X-Shield-Signature, no retries), backed by two server-side REST surfaces on account.shieldlabs.ai and api.shieldlabs.ai — both read-only, neither consuming request balance — described by a public OpenAPI 3.1 specification the company maintains in its own MIT-licensed GitHub repo and serves from its docs host. The Management API's history path was deprecated on 2026-09-01 with a dated Sunset of 2027-01-01, a named successor, and RFC 8594 Deprecation/Sunset/Link headers. Self-serve and per-identification priced, with a 5,000-identification free tier and no sales gate.
 
-See [PROFILE.md](PROFILE.md) for what this pass found and what it confirmed absent.
+**Areas:** Fraud Prevention · Abuse Prevention · Visitor Identification · Device Fingerprinting · Bot Detection · vpn-proxy-detection · Risk Scoring · Identity · Security · Webhook · traffic-quality · A2A
+
+## ShieldLabs on APIs.io
+
+Everything profiled for ShieldLabs is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/shieldlabs/](https://apis.io/providers/shieldlabs/)** — or go straight to one of the APIs or properties below.
+
+### APIs (3)
+
+- [ShieldLabs History API](https://apis.io/apis/shieldlabs/shieldlabs-history-api-api/) — Recommended snapshot reads on account.shieldlabs.ai. Authenticated with a Private API Key. Response envelope `{ data, total }`, limit/offset pagination,…
+- [ShieldLabs Management API](https://apis.io/apis/shieldlabs/shieldlabs-management-api-api/) — Profile and balance on api.shieldlabs.ai. Authenticated with Secret Key headers (`Authorization: Bearer` plus `X-Shield-Domain`). Its `GET /v1/history` path…
+- [ShieldLabs API](https://apis.io/apis/shieldlabs/shieldlabs-shieldlabs-api-api/) — The event half of the ShieldLabs contract. This document carries no REST paths — it holds the OpenAPI 3.1 top-level `webhooks` object describing…
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### AsyncAPI (1)
+
+Event-driven and webhook contracts.
+
+- [Shieldlabs Webhooks](https://apis.io/asyncapis/shieldlabs/shieldlabs-webhooks/)
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [shieldlabs](https://apis.io/servers/shieldlabs/shieldlabs/)
+
+#### JSON Schema (1)
+
+The data models the API reads and writes.
+
+- [ShieldLabs webhook event](https://apis.io/schemas/shieldlabs/shieldlabs-identification-scored.schema/)
+
+#### Examples (1)
+
+Example requests and responses.
+
+- [Shieldlabs Identification Scored Example](https://apis.io/examples/shieldlabs/shieldlabs-identification-scored-example/)
+
+#### Overlays (1)
+
+OpenAPI overlays, including conversational phrasing for each operation.
+
+- [Shieldlabs Server Api Overlay](https://apis.io/overlays/shieldlabs/shieldlabs-server-api-overlay/)
+
+#### Security (3)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Shieldlabs Authentication](https://apis.io/security/shieldlabs/shieldlabs-authentication/)
+- [Shieldlabs Domain Security](https://apis.io/security/shieldlabs/shieldlabs-domain-security/)
+- [Shieldlabs Vulnerability Disclosure](https://apis.io/security/shieldlabs/shieldlabs-vulnerability-disclosure/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Shieldlabs Plans Pricing](https://apis.io/plans/shieldlabs/shieldlabs-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Shieldlabs Rate Limits](https://apis.io/rate-limits/shieldlabs/shieldlabs-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://shieldlabs.ai)
+- [Documentation](https://docs.shieldlabs.ai/)
+- [Getting started](https://docs.shieldlabs.ai/quickstart)
+- [API reference](https://docs.shieldlabs.ai/api/server-api)
+- [Pricing](https://shieldlabs.ai/pricing)
+- [Sign up](https://app.shieldlabs.ai/signup)
+- [Support](https://docs.shieldlabs.ai/support)
+- [Changelog](https://docs.shieldlabs.ai/changelog)
+- [Blog](https://shieldlabs.ai/blog)
+- [Security](https://docs.shieldlabs.ai/security)
+- [Terms of service](https://docs.shieldlabs.ai/legal/terms)
+- [Privacy policy](https://docs.shieldlabs.ai/legal/privacy-policy)
+- [GitHub](https://github.com/ShieldLabs-ai)
+
+## API Evangelist rating
+
+**Kin Score 66.6** — exemplar · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 75.0 |
+| Contract quality | 66.7 |
+| Contract governance | 4.5 |
+| Operational transparency | 76.3 |
+| Developer ergonomics | 78.6 |
+| Access clarity | 69.7 |
+
+**Agent readiness 45.7** — agent-native
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | — |
+| Reversibility Documented | na |
+| MCP Server | documented (partial credit) |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | na |
+| Error Semantics | documented (partial credit) |
+| OpenAPI Examples | documented (partial credit) |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | yes |
+| Agent Skills | yes |
+| Well Known Catalog | yes |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | na |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | paginated |
+| Operation Distinctiveness | distinct |
+
+**Regulatory alignment 30.4** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/shieldlabs/](https://apis.io/providers/shieldlabs/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for ShieldLabs: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/shieldlabs/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
